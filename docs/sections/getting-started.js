@@ -63,13 +63,16 @@ const overview = {
 const installation = {
   id: 'installation',
   title: 'Installation',
-  lead: 'There is no package to install yet. Copy the src folder into your project.',
+  lead: 'Copy the src folder from GitHub into your project. There is nothing to install and nothing to build.',
   body: `
-    <p>Tabula is not published, so there is nothing to install with npm today. It becomes a package when it is rebuilt on the real product, with the developers.</p>
-    <p>The system is two files: one stylesheet with every token and class, and one JS module exposing <code>tb.init</code> and <code>tb.toast</code>. The examples on this site link them by name, as <code>tabula.css</code> and <code>tabula.js</code>.</p>
+    <p>Tabula lives on <a href="https://github.com/opreadoru/tabula" target="_blank" rel="noopener">GitHub</a>. Download it as a ZIP from the green Code button, or clone it, then copy the <code>src</code> folder into your project. It has no dependencies.</p>
+    ${codeOnly(`
+git clone https://github.com/opreadoru/tabula.git`)}
+    <p>The system is two files: one stylesheet with every token and class, and one JS module exposing <code>tb.init</code> and <code>tb.toast</code>. The examples on this site link them by name, as <code>tabula.css</code> and <code>tabula.js</code>. The charts, the tree views, the app shell and edit mode are separate modules in the same folder, imported only by the pages that use them.</p>
     ${codeOnly(`
 <link rel="stylesheet" href="tabula.css" />
 <script type="module" src="tabula.js"></script>`)}
+    <p>The React wrappers are in the <code>react</code> folder, as source files to copy next to your own components. See Usage in React.</p>
     <h3>Import order</h3>
     <p>Put the pre-paint snippet in <code>&lt;head&gt;</code>, before the stylesheet, so the saved theme and menu position are right on the first paint and nothing flashes the wrong way and then jumps. Every page of a product carries the same script.</p>
     ${codeOnly(HEAD_SNIPPET)}

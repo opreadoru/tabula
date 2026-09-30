@@ -52,7 +52,7 @@ Card collapse, card focus and expandable charts are opt-in: import `src/collapse
 
 The app bar is mounted with `mountShell` from `src/shell.js`, with the product's brand, tabs, submenus and account passed in; it also loads collapse, focus and expand. Charts come from `src/charts.js` and the four tree views from `src/tree.js`. The templates in `pages/` show each of them on a full page.
 
-In React, the wrappers in `react/` map props to the same classes. They are source files, and there is no package yet. See `react/README.md`.
+In React, the wrappers in `react/` map props to the same classes. They are source files to copy next to your own components. See `react/README.md`.
 
 For the dark theme, put `tb-dark` on `<html>`.
 
