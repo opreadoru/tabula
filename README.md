@@ -22,7 +22,9 @@ https://github.com/user-attachments/assets/67ce81c7-9cdc-45e6-8b68-1590ae0ab2a7
 - **Template pages** in `pages/`: a dashboard, analytics, a data table, a record in detail, a report and a layout editor, on one seeded set of generic business data.
 - **A documentation site** with a live example, the exact markup, rules and do and don't for every component, plus the foundations: colour, type, spacing, shape, formatting, states and icons.
 
-## Run the docs
+## Run the docs on your machine
+
+The docs and templates are [live on GitHub Pages](https://opreadoru.github.io/tabula/), so this is only for working on Tabula itself. It needs Node.js, and `npm install` only fetches Vite, the local server. Using Tabula in a project needs none of this (see "Use it" below).
 
 ```
 npm install
@@ -32,6 +34,8 @@ npx vite --port 5190
 The documentation opens at `http://localhost:5190/`, and the templates at `http://localhost:5190/pages/dashboard.html`.
 
 ## Use it
+
+Copy the `src` folder into your project. Download the ZIP from the green Code button or clone the repo. There is no package to install, and nothing to build.
 
 In plain HTML, load the styles and the small behaviour layer, then use the classes:
 
