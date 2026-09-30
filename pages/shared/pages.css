@@ -1,0 +1,27 @@
+/* Shared page CSS for the templates, prefix pg-. Only what several template pages need and the
+   system does not own: the progress slot under the toolbar, the info marker on a figure, filter
+   chips and the loading placeholders of a figure. */
+
+.pg-nowrap { white-space: nowrap; }
+.pg-chip { max-width: 320px; }
+
+/* A fixed slot under the toolbar, so the progress bar never moves the page. */
+.pg-progress-slot { height: var(--tb-space-1); padding: 0 var(--tb-space-3); }
+
+/* The page dims while it recomputes. */
+.pg-busy { opacity: 0.55; pointer-events: none; transition: opacity var(--tb-duration) var(--tb-ease); }
+
+.pg-info { display: inline-flex; color: var(--tb-fg-subtle); cursor: help; border-radius: var(--tb-radius-sm); }
+.pg-info:hover { color: var(--tb-fg-muted); }
+
+.pg-foot { justify-content: flex-start; min-height: var(--tb-control-lg); gap: var(--tb-space-2); }
+
+/* Loading placeholders of a figure */
+.pg-skel-value { width: 96px; height: var(--tb-space-6); }
+.pg-skel-spark { width: 120px; height: var(--tb-space-8); }
+.pg-skel-line { width: 60%; height: var(--tb-space-3); }
+.pg-skel-cell { width: 100%; height: var(--tb-space-3); }
+
+@media (prefers-reduced-motion: reduce) {
+  .pg-busy { transition: none; }
+}

@@ -1,0 +1,339 @@
+/* Report template, prefix rp-. Layout only; colours, sizes and radii come from Tabula tokens.
+   Outline on the left, the report as a page in the middle, status and activity on the right.
+   The page frame, avatars, description lists, tables and the rail's lists are system components. */
+
+/* Sticky offset: the app bar height when the menu is on top, nothing when it is on the left. */
+:root { --rp-sticky: calc(var(--tb-space-12) + var(--tb-space-3)); }
+:root.tb-nav-left { --rp-sticky: var(--tb-space-3); }
+
+.rp-main {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr) 320px;
+  align-items: start;
+  gap: var(--tb-space-4);
+}
+/* Fitted (tb-page--fit, from 1181px): the outline, the document and the rail each scroll on their
+   own, the document being the one that usually does. Narrower, the page scrolls and the outline
+   and rail stick. */
+@media (min-width: 1181px) {
+  .rp-main { grid-template-rows: minmax(0, 1fr); align-items: stretch; height: 100%; }
+  .rp-outline, .rp-rail, .rp-doc-col { position: static; min-height: 0; max-height: none; overflow: hidden auto; }
+  /* Only the document keeps room for its scrollbar; the side columns usually fit and a reserved
+     gutter would show as a blank strip. */
+  .rp-doc-col { scrollbar-gutter: stable; }
+  .rp-section { scroll-margin-top: var(--tb-space-3); }
+}
+.rp-main[hidden] { display: none; }
+
+/* Outline */
+.rp-outline {
+  position: sticky;
+  top: var(--rp-sticky);
+  padding-top: var(--tb-space-2);
+}
+.rp-outline-head { margin: 0 0 var(--tb-space-2) var(--tb-space-3); color: var(--tb-fg-muted); }
+.rp-outline-list { margin: 0; padding: 0; list-style: none; }
+.rp-outline-link {
+  display: block;
+  padding: var(--tb-space-1) var(--tb-space-3);
+  font-size: var(--tb-text-sm);
+  line-height: var(--tb-leading-tight);
+  color: var(--tb-fg-muted);
+  text-decoration: none;
+  border-left: calc(var(--tb-border-width) * 2) solid var(--tb-border);
+  transition: color var(--tb-duration-fast) var(--tb-ease), border-color var(--tb-duration-fast) var(--tb-ease);
+}
+.rp-outline-link--sub { padding-left: var(--tb-space-6); }
+.rp-outline-link { display: flex; align-items: center; gap: var(--tb-space-2); }
+.rp-outline-text { flex: 1; min-width: 0; }
+.rp-outline-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: var(--tb-space-4);
+  height: var(--tb-space-4);
+  padding: 0 5px;
+  font-size: var(--tb-text-xs);
+  font-weight: var(--tb-weight-semibold);
+  color: var(--tb-fg-link);
+  background: var(--tb-accent-soft);
+  border-radius: var(--tb-radius-full);
+}
+.rp-outline-count[hidden] { display: none; }
+.rp-outline-foot {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-2);
+  margin: var(--tb-space-4) 0 0 var(--tb-space-3);
+  padding-top: var(--tb-space-3);
+  border-top: var(--tb-border-width) solid var(--tb-border);
+}
+.rp-outline-link:hover { color: var(--tb-fg); background: var(--tb-bg-hover); }
+.rp-outline-link.is-active {
+  color: var(--tb-fg);
+  font-weight: var(--tb-weight-semibold);
+  border-left-color: var(--tb-accent);
+}
+
+/* The document, a page on the canvas */
+.rp-doc-col { min-width: 0; }
+.rp-doc {
+  position: relative;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: var(--tb-space-12) var(--tb-space-12) var(--tb-space-10);
+  background: var(--tb-bg-surface);
+  border: var(--tb-border-width) solid var(--tb-border);
+  border-radius: var(--tb-radius-md);
+  overflow: hidden;
+}
+/* The brand pattern, as on every card header: faint stacks on the top left, fading right. */
+.rp-doc::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: var(--tb-control-lg);
+  width: min(30%, 160px);
+  background-image: var(--tb-brand-pattern);
+  background-size: 80px 80px;
+  background-position: left center;
+  opacity: var(--tb-brand-pattern-opacity);
+  -webkit-mask-image: linear-gradient(to left, transparent, #000 60%);
+  mask-image: linear-gradient(to left, transparent, #000 60%);
+  pointer-events: none;
+}
+.rp-doc-head { padding-bottom: var(--tb-space-6); margin-bottom: var(--tb-space-6); border-bottom: var(--tb-border-width) solid var(--tb-border); }
+.rp-doc-head .tb-caps { margin: 0 0 var(--tb-space-2); color: var(--tb-fg-muted); }
+.rp-doc-title { margin: 0 0 var(--tb-space-5); }
+/* The header facts sit on a four-column grid instead of the stacked list's free flow. */
+.rp-meta {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--tb-space-3) var(--tb-space-4);
+}
+
+/* Sections */
+.rp-section {
+  position: relative;
+  scroll-margin-top: var(--rp-sticky);
+  margin: 0 calc(var(--tb-space-3) * -1) var(--tb-space-5);
+  padding: var(--tb-space-2) var(--tb-space-3);
+  border-radius: var(--tb-radius-md);
+  transition: background-color var(--tb-duration) var(--tb-ease);
+}
+.rp-section:hover:not(:has(.rp-section:hover)) { background: var(--tb-bg-hover); }
+.rp-section.is-editing { background: var(--tb-accent-soft); }
+.rp-section.is-added { background: var(--tb-warning-soft); }
+.rp-sec-head {
+  display: flex;
+  align-items: center;
+  gap: var(--tb-space-2);
+  min-height: var(--tb-control-md);
+}
+.rp-sec-title { flex: 1; display: flex; align-items: center; gap: var(--tb-space-2); margin: 0; }
+.rp-marks { display: inline-flex; align-items: center; gap: var(--tb-space-1); font-size: var(--tb-text-sm); font-weight: var(--tb-weight-regular); }
+.rp-sec-actions {
+  display: flex;
+  gap: var(--tb-space-1);
+  opacity: 0;
+  transition: opacity var(--tb-duration-fast) var(--tb-ease);
+}
+.rp-section:hover:not(:has(.rp-section:hover)) > .rp-sec-head > .rp-sec-actions,
+.rp-sec-actions:focus-within { opacity: 1; }
+.rp-section.is-editing > .rp-sec-head > .rp-sec-actions,
+.rp-section.is-generating > .rp-sec-head > .rp-sec-actions { visibility: hidden; }
+.rp-doc.is-locked [data-act="edit"],
+.rp-doc.is-locked [data-act="regen"] { display: none; }
+
+.rp-p, .rp-rec-text {
+  margin: 0 0 var(--tb-space-3);
+  font-size: var(--tb-text-md);
+  line-height: var(--tb-leading);
+  max-width: 110ch;
+}
+[data-edit][contenteditable="true"] {
+  padding: var(--tb-space-1) var(--tb-space-2);
+  margin-left: calc(var(--tb-space-2) * -1);
+  background: var(--tb-bg-surface);
+  border: var(--tb-border-width) solid var(--tb-border-strong);
+  border-radius: var(--tb-radius-sm);
+  outline: none;
+}
+[data-edit][contenteditable="true"]:focus { border-color: var(--tb-border-focus); }
+.rp-edit-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--tb-space-2);
+  padding-top: var(--tb-space-1);
+}
+.rp-skeleton { display: flex; flex-direction: column; gap: var(--tb-space-2); padding: var(--tb-space-1) 0 var(--tb-space-3); }
+
+/* Findings */
+.rp-finding {
+  margin: var(--tb-space-3) 0 var(--tb-space-4);
+  padding: var(--tb-space-3) var(--tb-space-4);
+  border: var(--tb-border-width) solid var(--tb-border);
+  border-radius: var(--tb-radius-md);
+}
+.rp-finding .rp-sec-head { min-height: var(--tb-control-sm); }
+.rp-finding-num { flex: 1; margin: 0; color: var(--_band, var(--tb-fg-muted)); }
+.rp-finding-title { display: flex; align-items: center; flex-wrap: wrap; gap: var(--tb-space-2); margin: 0 0 var(--tb-space-2); }
+.rp-finding-meta { display: flex; align-items: center; flex-wrap: wrap; gap: var(--tb-space-2); margin-bottom: var(--tb-space-3); }
+.rp-finding-meta a { text-decoration: none; }
+.rp-figures { margin-bottom: var(--tb-space-3); }
+.rp-figures dd { font-weight: var(--tb-weight-semibold); }
+
+/* Flagged entities */
+.rp-table-wrap { margin-top: var(--tb-space-2); }
+.rp-table { --_table-row: 44px; }
+.rp-table td { vertical-align: middle; }
+.rp-table .rp-wrap { white-space: normal; min-width: 180px; font-size: var(--tb-text-sm); padding-top: var(--tb-space-2); padding-bottom: var(--tb-space-2); }
+.rp-entity { display: block; font-weight: var(--tb-weight-medium); }
+.rp-slices { display: inline-flex; gap: var(--tb-space-1); }
+.rp-slices a { text-decoration: none; }
+
+/* Recommendations */
+.rp-recs { margin: 0; padding: 0; list-style: none; }
+.rp-rec {
+  display: grid;
+  grid-template-columns: var(--tb-space-8) minmax(0, 1fr);
+  gap: var(--tb-space-2);
+  padding: var(--tb-space-3) 0;
+  border-top: var(--tb-border-width) solid var(--tb-border);
+}
+.rp-rec:first-child { border-top: 0; }
+.rp-rec-num { font-size: var(--tb-text-sm); font-weight: var(--tb-weight-semibold); color: var(--tb-accent); padding-top: 2px; }
+.rp-rec-text { margin-bottom: var(--tb-space-2); }
+
+/* Sources */
+.rp-sources { margin: var(--tb-space-2) 0 0; padding: 0; list-style: none; }
+.rp-sources li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--tb-space-3);
+  padding: var(--tb-space-2) 0;
+  border-bottom: var(--tb-border-width) solid var(--tb-border);
+}
+.rp-source-name { font-size: var(--tb-text-sm); overflow-wrap: anywhere; }
+
+/* Rail */
+.rp-rail {
+  position: sticky;
+  top: var(--rp-sticky);
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-3);
+  max-height: calc(100vh - var(--rp-sticky) - var(--tb-space-3));
+  overflow: auto;
+}
+.rp-rail > .tb-card { flex: none; }
+.rp-status-line { display: flex; align-items: center; justify-content: space-between; gap: var(--tb-space-2); }
+.rp-status-text { margin: var(--tb-space-2) 0 0; }
+.rp-menu-gap { display: inline-block; width: 16px; }
+
+/* A version row holds the note in full, so its avatar sits at the top and the date shares the
+   title line. */
+.rp-versions .tb-list-item { align-items: flex-start; }
+.rp-version-top { display: flex; align-items: center; gap: var(--tb-space-2); min-width: 0; }
+.rp-versions .tb-list-item-body { min-width: 0; }
+.rp-version-meta { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+
+/* Compare and history dialogs */
+.rp-dialog-body { display: flex; flex-direction: column; gap: var(--tb-space-4); }
+.rp-cmp-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--tb-space-3); }
+.rp-cmp-head p { display: flex; align-items: center; gap: var(--tb-space-2); margin: 0; }
+.rp-cmp-against { display: inline-flex; align-items: center; gap: var(--tb-space-2); white-space: nowrap; }
+.rp-diff-label { margin: var(--tb-space-2) 0 var(--tb-space-1); color: var(--tb-fg-muted); }
+.rp-diff-before { color: var(--tb-fg-muted); }
+.rp-cmp-legend { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tb-space-2); margin: 0; }
+.rp-cmp { display: flex; flex-direction: column; gap: var(--tb-space-2); }
+.rp-cmp-title { display: flex; align-items: center; gap: var(--tb-space-2); margin: 0; }
+.rp-diff { font-size: var(--tb-text-md); line-height: var(--tb-leading); white-space: pre-line; }
+.rp-ins { color: var(--tb-fg); text-decoration: none; background: var(--tb-success-soft); border-radius: var(--tb-radius-sm); }
+.rp-del { color: var(--tb-fg-muted); text-decoration: line-through; background: var(--tb-danger-soft); border-radius: var(--tb-radius-sm); }
+.rp-trail { margin: 0; }
+.rp-trail-item { align-items: flex-start; }
+.rp-trail-item .tb-list-item-body { gap: var(--tb-space-1); }
+.rp-trail-text { color: var(--tb-fg-muted); }
+
+/* A comment is a list row laid out as a column: who and when, the section, the text, actions. */
+/* Comments sit under the text of the section they are about, in a quiet block off the margin. */
+.rp-sec-comments {
+  margin: var(--tb-space-3) 0 0;
+  padding: 0 var(--tb-space-3);
+  background: var(--tb-bg-sunken);
+  border-radius: var(--tb-radius-md);
+}
+.rp-sec-comments[hidden] { display: none; }
+.rp-comment-list { margin: 0; }
+.rp-comment { flex-direction: column; align-items: stretch; gap: var(--tb-space-1); }
+.rp-comment.is-resolved { opacity: 0.7; }
+.rp-comment-head { display: flex; align-items: center; gap: var(--tb-space-2); }
+.rp-comment-on { align-self: flex-start; }
+.rp-comment-text-p { margin: 0; }
+.rp-comment-form { display: flex; flex-direction: column; gap: var(--tb-space-2); padding: var(--tb-space-3) 0; }
+.rp-comment-list + .rp-comment-form { border-top: var(--tb-border-width) solid var(--tb-border); }
+.rp-comment-text { height: auto; min-height: calc(var(--tb-control-md) * 1.6); padding: var(--tb-space-2); resize: vertical; }
+
+.rp-exports-empty { margin: 0; padding: var(--tb-space-3) var(--tb-space-4); }
+
+/* Export dialog */
+.rp-fieldset { margin: 0; padding: 0; border: 0; }
+.rp-fieldset legend { margin-bottom: var(--tb-space-2); color: var(--tb-fg-muted); }
+.rp-formats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--tb-space-2); }
+.rp-format {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-2);
+  padding: var(--tb-space-3);
+  border: var(--tb-border-width) solid var(--tb-border);
+  border-radius: var(--tb-radius-md);
+  cursor: pointer;
+}
+.rp-format input { position: absolute; opacity: 0; pointer-events: none; }
+.rp-format:hover { background: var(--tb-bg-hover); }
+.rp-format:has(input:checked) { border-color: var(--tb-accent); background: var(--tb-accent-soft); box-shadow: inset 0 0 0 var(--tb-border-width) var(--tb-accent); }
+.rp-format:has(input:focus-visible) { outline: calc(var(--tb-border-width) * 2) solid var(--tb-border-focus); outline-offset: 2px; }
+.rp-format-text { display: flex; flex-direction: column; gap: 2px; }
+.rp-format-icon { display: inline-flex; color: var(--tb-fg-muted); }
+.rp-opt-help { margin: 0; }
+.rp-export-what { margin: 0; }
+
+.rp-empty-wrap { max-width: 560px; margin: var(--tb-space-10) auto; padding: 0 var(--tb-space-3); }
+.rp-empty-wrap[hidden] { display: none; }
+
+@media (max-width: 1200px) {
+  .rp-main { grid-template-columns: minmax(0, 1fr) 300px; }
+  .rp-outline { display: none; }
+}
+@media (max-width: 860px) {
+  .rp-main { grid-template-columns: minmax(0, 1fr); }
+  .rp-rail { position: static; max-height: none; }
+  .rp-doc { padding: var(--tb-space-6) var(--tb-space-4); }
+  .rp-meta { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media print {
+  .tb-appbar, .tb-page-toolbar, .rp-outline, .rp-rail, .rp-sec-actions, .rp-sec-comments, .rp-edit-bar { display: none !important; }
+  .rp-main { display: block; padding: 0; }
+  .rp-doc { max-width: none; border: 0; box-shadow: none; padding: 0; }
+}
+
+/* The finding's number takes the colour of its slice band; the box stays neutral. Action tags wrap. */
+.rp-finding--high { --_band: var(--tb-prob-high); }
+.rp-finding--mid { --_band: var(--tb-prob-mid); }
+.rp-finding--low { --_band: var(--tb-prob-low); }
+.rp-table td:last-child { white-space: normal; }
+.rp-table td:last-child .tb-tag { height: auto; min-height: var(--tb-control-sm); white-space: normal; line-height: var(--tb-leading-tight); padding-block: 2px; }
+.rp-table .rp-wrap { min-width: 160px; }
+
+/* Charts and figures inside the document */
+.rp-figure { margin: var(--tb-space-3) 0 var(--tb-space-4); padding: var(--tb-space-3); border: var(--tb-border-width) solid var(--tb-border); border-radius: var(--tb-radius-md); }
+.rp-figure-head { display: flex; align-items: center; gap: var(--tb-space-2); margin-bottom: var(--tb-space-2); }
+.rp-figure-head .tb-caps { flex: 1; margin: 0; color: var(--tb-fg-muted); }
+.rp-figure-note { margin: var(--tb-space-2) 0 0; font-size: var(--tb-text-sm); color: var(--tb-fg-muted); }
+.rp-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--tb-space-3); margin: var(--tb-space-3) 0; }
+.rp-kpis .tb-stat { padding: var(--tb-space-2) var(--tb-space-3); border: var(--tb-border-width) solid var(--tb-border); border-radius: var(--tb-radius-md); }
+.rp-finding--success { --_band: var(--tb-success); }
+.rp-finding--danger { --_band: var(--tb-danger); }

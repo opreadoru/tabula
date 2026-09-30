@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Report, Tabula templates</title>
+    <script>try { var s = localStorage, h = document.documentElement.classList; if (s.getItem('tb-theme') !== 'light') h.add('tb-dark'); if (s.getItem('tb-nav') === 'left') h.add('tb-nav-left'); if (s.getItem('tb-nav-collapsed') === '1') h.add('tb-nav-collapsed') } catch (e) {}</script>
+    <link rel="stylesheet" href="../src/tabula.css" />
+    <link rel="stylesheet" href="./shared/pages.css" />
+    <link rel="stylesheet" href="./report.css" />
+  </head>
+  <body>
+    <header data-shell></header>
+
+    <div class="tb-page tb-page--fit">
+      <div class="tb-page-toolbar rp-toolbar">
+        <h1 class="tb-page-title">Report</h1>
+        <div class="tb-page-context">
+          <span class="tb-tag tb-tag--minimal tb-num" id="rp-id"></span>
+          <span id="rp-status-tag"></span>
+        </div>
+        <span class="tb-spacer"></span>
+        <div class="tb-page-actions">
+          <span class="tb-text tb-text--sm tb-text--muted" id="rp-working" aria-live="polite"></span>
+          <button class="tb-button" type="button" id="rp-redact" aria-pressed="false" data-tb-tooltip="Replace account names with their IDs, on screen and in exports"></button>
+          <button class="tb-button" type="button" id="rp-print"></button>
+          <button class="tb-button tb-button--primary" type="button" id="rp-export-open"></button>
+        </div>
+      </div>
+
+      <main class="tb-page-main rp-main" id="rp-main">
+        <nav class="rp-outline" id="rp-outline" aria-label="Report outline"></nav>
+        <div class="rp-doc-col">
+          <article class="rp-doc" id="rp-doc" aria-label="Report"></article>
+        </div>
+        <aside class="rp-rail" aria-label="Report status, versions and export">
+          <section class="tb-card" id="rp-status-card" aria-labelledby="rp-status-title">
+            <div class="tb-card-header">
+              <h2 class="tb-card-title" id="rp-status-title">Status</h2>
+              <div class="tb-card-actions">
+                <div class="tb-dropdown">
+                  <button class="tb-button tb-button--minimal tb-button--sm" type="button" data-tb-dropdown id="rp-status-menu-btn"></button>
+                  <div class="tb-popover tb-popover--end">
+                    <div class="tb-menu" role="menu" id="rp-status-menu"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="tb-card-body" id="rp-status-body"></div>
+            <div class="tb-card-footer" id="rp-status-foot"></div>
+          </section>
+
+          <section class="tb-card" id="rp-versions" aria-labelledby="rp-versions-title">
+            <div class="tb-card-header">
+              <h2 class="tb-card-title" id="rp-versions-title">Version history</h2>
+              <div class="tb-card-actions"><span class="tb-text tb-text--sm tb-text--muted" id="rp-versions-hint"></span></div>
+            </div>
+            <div class="tb-card-body tb-card-body--flush" id="rp-versions-body"></div>
+          </section>
+
+          <section class="tb-card" id="rp-exports" aria-labelledby="rp-exports-title">
+            <div class="tb-card-header"><h2 class="tb-card-title" id="rp-exports-title">Export</h2></div>
+            <div class="tb-card-body tb-card-body--flush" id="rp-exports-body"></div>
+            <div class="tb-card-footer">
+              <button class="tb-button tb-button--sm" type="button" id="rp-print-2"></button>
+              <button class="tb-button tb-button--sm tb-button--primary" type="button" id="rp-export-2"></button>
+            </div>
+          </section>
+        </aside>
+      </main>
+    </div>
+
+    <!-- Export: format, content, progress. -->
+    <div class="tb-dialog-backdrop" id="rp-export">
+      <div class="tb-dialog" role="dialog" aria-modal="true" aria-labelledby="rp-export-title">
+        <div class="tb-dialog-header">
+          <h2 class="tb-dialog-title" id="rp-export-title">Export report</h2>
+          <button class="tb-button tb-button--minimal tb-button--sm tb-button--icon" type="button" data-tb-dialog-close aria-label="Close" id="rp-export-x"></button>
+        </div>
+        <div class="tb-dialog-body tb-stack">
+          <fieldset class="rp-fieldset">
+            <legend class="tb-caps">Format</legend>
+            <div class="rp-formats" id="rp-formats"></div>
+          </fieldset>
+          <fieldset class="rp-fieldset">
+            <legend class="tb-caps">Content</legend>
+            <div class="tb-stack tb-gap-1">
+              <label class="tb-checkbox"><input type="checkbox" id="rp-opt-method" checked /><span>Include the method and sources</span></label>
+              <label class="tb-checkbox"><input type="checkbox" id="rp-opt-customers" checked /><span>Include the accounts at risk</span></label>
+              <label class="tb-checkbox"><input type="checkbox" id="rp-opt-redact" /><span>Hide account names</span></label>
+              <p class="tb-field-help rp-opt-help">Hiding replaces each account name with its ID. The document behind this dialog follows it.</p>
+            </div>
+          </fieldset>
+          <p class="tb-text rp-export-what" id="rp-export-what"></p>
+          <div class="rp-export-progress" id="rp-export-progress" hidden>
+            <div class="tb-progress-label"><span id="rp-export-step">Preparing</span><span id="rp-export-pct"></span></div>
+            <div class="tb-progress"><span class="tb-progress-bar" id="rp-export-bar"></span></div>
+          </div>
+        </div>
+        <div class="tb-dialog-footer">
+          <button class="tb-button" type="button" data-tb-dialog-close>Cancel</button>
+          <button class="tb-button tb-button--primary" type="button" id="rp-export-go">Export</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- One confirm dialog for every locking action. The page fills it. -->
+    <div class="tb-dialog-backdrop" id="rp-confirm">
+      <div class="tb-dialog tb-dialog--sm" role="dialog" aria-modal="true" aria-labelledby="rp-confirm-title">
+        <div class="tb-dialog-header">
+          <span id="rp-confirm-icon"></span>
+          <h2 class="tb-dialog-title" id="rp-confirm-title"></h2>
+        </div>
+        <div class="tb-dialog-body"><p class="tb-text" id="rp-confirm-text"></p></div>
+        <div class="tb-dialog-footer">
+          <button class="tb-button" type="button" data-tb-dialog-close>Cancel</button>
+          <button class="tb-button tb-button--primary" type="button" id="rp-confirm-go"></button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="./report.js"></script>
+  </body>
+</html>

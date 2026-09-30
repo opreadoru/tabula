@@ -1,0 +1,29 @@
+/* Analytics template, prefix an-. The grid only: the charts, the tree views and the inspector's
+   parts are system components. */
+
+.an-main {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  align-items: stretch;
+  align-content: start;
+  padding-top: var(--tb-space-2);
+}
+.an-main > * { min-width: 0; }
+.an-group { grid-column: 1 / -1; margin: var(--tb-space-3) 0 0; color: var(--tb-fg-muted); scroll-margin-top: var(--tb-space-12); }
+.an-group:first-child { margin-top: 0; }
+.an-area { grid-column: span 8; }
+.an-funnel { grid-column: span 4; }
+.an-bars, .an-heat { grid-column: span 6; }
+.an-scatter { grid-column: span 7; }
+.an-hist { grid-column: span 5; }
+.an-tree { grid-column: span 9; --tb-tree-height: max(460px, calc(100vh - 190px)); }
+.an-inspector { grid-column: span 3; align-self: start; }
+@media (max-width: 1180px) {
+  .an-area, .an-funnel, .an-bars, .an-heat, .an-scatter, .an-hist, .an-tree, .an-inspector { grid-column: 1 / -1; }
+}
+
+.an-point { flex-wrap: nowrap; font-size: var(--tb-text-sm); }
+.an-point-name { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-weight: var(--tb-weight-medium); }
+.an-inspector-body { display: flex; flex-direction: column; gap: var(--tb-space-3); }
+.an-inspector .tb-card-footer { flex-wrap: wrap; }
+.an-inspector-stat { padding: 0; }

@@ -1,0 +1,15 @@
+node_modules
+dist
+*.log
+*.local
+
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+
+# Local work that is not part of the system
+video/
+CLAUDE.md
+.claude/
+*.code-workspace

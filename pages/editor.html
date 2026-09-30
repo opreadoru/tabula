@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Layout editor, Tabula templates</title>
+    <script>try { var s = localStorage, h = document.documentElement.classList; if (s.getItem('tb-theme') !== 'light') h.add('tb-dark'); if (s.getItem('tb-nav') === 'left') h.add('tb-nav-left'); if (s.getItem('tb-nav-collapsed') === '1') h.add('tb-nav-collapsed') } catch (e) {}</script>
+    <link rel="stylesheet" href="../src/tabula.css" />
+    <link rel="stylesheet" href="./shared/pages.css" />
+    <link rel="stylesheet" href="./editor.css" />
+  </head>
+  <body>
+    <header data-shell></header>
+
+    <div class="tb-page">
+      <div class="tb-page-toolbar">
+        <h1 class="tb-page-title">Layout editor</h1>
+        <div class="tb-page-context"><span class="tb-tag tb-tag--minimal" id="le-context"></span></div>
+        <span class="tb-spacer"></span>
+        <div class="tb-page-actions">
+          <button class="tb-button" type="button" id="le-clear" hidden>
+            <svg class="tb-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 21H8a2 2 0 0 1-1.42-.587l-3.994-3.999a2 2 0 0 1 0-2.828l10-10a2 2 0 0 1 2.829 0l5.999 6a2 2 0 0 1 0 2.828L12.834 21" /><path d="m5.082 11.09 8.828 8.828" /></svg>
+            Clear
+          </button>
+        </div>
+      </div>
+
+      <main class="tb-page-main le-main" id="le-main">
+        <header class="le-masthead" id="le-masthead"></header>
+
+        <div class="le-start" id="le-start" role="group" aria-label="Make your page">
+          <button class="tb-card tb-card--interactive le-choice" type="button" id="le-template">
+            <svg class="le-preview" viewBox="0 0 160 96" aria-hidden="true" focusable="false">
+              <rect x="4" y="4" width="152" height="14" rx="2" class="le-p-fill" />
+              <rect x="4" y="22" width="100" height="30" rx="2" class="le-p-accent" /><rect x="108" y="22" width="48" height="30" rx="2" class="le-p-fill" />
+              <rect x="4" y="56" width="76" height="16" rx="2" class="le-p-fill" /><rect x="84" y="56" width="72" height="16" rx="2" class="le-p-fill" />
+              <rect x="4" y="76" width="48" height="16" rx="2" class="le-p-fill" /><rect x="56" y="76" width="48" height="16" rx="2" class="le-p-fill" /><rect x="108" y="76" width="48" height="7" rx="2" class="le-p-fill" /><rect x="108" y="85" width="48" height="7" rx="2" class="le-p-fill" />
+            </svg>
+            <span class="le-choice-title">Start from a template</span>
+            <span class="le-choice-text">Nine widgets in four rows, ready to move, resize or remove.</span>
+          </button>
+          <button class="tb-card tb-card--interactive le-choice" type="button" id="le-scratch">
+            <svg class="le-preview" viewBox="0 0 160 96" aria-hidden="true" focusable="false">
+              <rect x="4.5" y="4.5" width="75" height="87" rx="2" class="le-p-hole" /><rect x="84.5" y="4.5" width="35" height="87" rx="2" class="le-p-hole" /><rect x="124.5" y="4.5" width="31" height="87" rx="2" class="le-p-hole" />
+              <path d="M42 44v8M38 48h8M102 44v8M98 48h8M140 44v8M136 48h8" class="le-p-plus" />
+            </svg>
+            <span class="le-choice-title">Start from scratch</span>
+            <span class="le-choice-text">An empty row of three columns, filled from the widget catalogue.</span>
+          </button>
+        </div>
+
+        <div class="tb-empty le-empty" id="le-empty" hidden>
+          <span class="tb-empty-icon"><svg class="tb-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="7" height="7" x="3" y="3" rx="1" /><rect width="7" height="7" x="14" y="3" rx="1" /><rect width="7" height="7" x="14" y="14" rx="1" /><rect width="7" height="7" x="3" y="14" rx="1" /></svg></span>
+          <p class="tb-empty-title">Your page is empty</p>
+          <p class="tb-empty-description">Start with a row of three columns and fill each one with a widget.</p>
+          <div class="tb-empty-action"><button class="tb-button tb-button--primary" type="button" id="le-empty-add">Add a widget</button></div>
+        </div>
+      </main>
+    </div>
+
+    <div class="tb-dialog-backdrop" id="le-clear-dialog">
+      <div class="tb-dialog tb-dialog--sm tb-dialog--danger" role="dialog" aria-modal="true" aria-labelledby="le-clear-title">
+        <div class="tb-dialog-header">
+          <h2 class="tb-dialog-title" id="le-clear-title">Clear this page</h2>
+          <button class="tb-button tb-button--minimal tb-button--sm tb-button--icon" type="button" data-tb-dialog-close aria-label="Close">
+            <svg class="tb-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+          </button>
+        </div>
+        <div class="tb-dialog-body"><p class="tb-text">Removes every widget and the layout from this page, including your notes, and cannot be undone. The data and the other pages stay as they are.</p></div>
+        <div class="tb-dialog-footer">
+          <button class="tb-button" type="button" data-tb-dialog-close>Cancel</button>
+          <button class="tb-button tb-button--danger" type="button" id="le-clear-confirm" data-tb-dialog-close>Clear the page</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="./editor.js"></script>
+  </body>
+</html>

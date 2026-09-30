@@ -1,0 +1,10 @@
+/* Tabula. One import brings the whole system. Order matters: tokens, base, then elements. */
+@import './fonts.css';
+@import './tokens.css';
+@import './base.css';
+@import './elements-controls.css';
+@import './elements-surfaces.css';
+@import './elements-patterns.css';
+@import './elements-shell.css';
+@import './elements-edit.css';
+@import './elements-charts.css';

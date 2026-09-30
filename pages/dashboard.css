@@ -1,0 +1,30 @@
+/* Dashboard template, prefix db-. The grid of cards only: figures, charts, legends and the table
+   are system components. */
+
+/* The page is the scroll. Twelve columns: four figures, then the charts in pairs. */
+.db-main {
+  --db-card-cap: max(320px, calc(100vh - 220px));
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  align-items: stretch;
+  align-content: start;
+  padding-top: var(--tb-space-2);
+}
+.db-kpi { grid-column: span 3; overflow: hidden; }
+.db-line { grid-column: span 8; }
+.db-donut { grid-column: span 4; }
+.db-bars { grid-column: span 5; }
+.db-countries { grid-column: span 7; }
+@media (max-width: 1180px) {
+  .db-kpi { grid-column: span 6; }
+  .db-line, .db-donut, .db-bars, .db-countries { grid-column: 1 / -1; }
+}
+.db-main > .tb-card { min-width: 0; }
+
+.db-table-wrap { max-height: var(--db-card-cap); }
+.db-table tbody tr[data-country] { cursor: pointer; }
+.db-table tbody tr:focus-visible { outline: 2px solid var(--tb-border-focus); outline-offset: -2px; }
+.db-share { display: flex; align-items: center; gap: var(--tb-space-2); min-width: 120px; }
+.db-share > .tb-bar { flex: 1; }
+.db-share > .tb-num { width: 44px; text-align: right; }
+.db-countries .tb-card-footer { justify-content: space-between; }

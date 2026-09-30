@@ -1,0 +1,452 @@
+/* Tabula app shell. The app bar every product page shares, docked at the top or turned into a
+   left sidebar, and the page frame under it. The system provides the classes; the behaviour
+   (dock, collapse, theme, remembering the choice) lives in the product's shell script, which
+   sets two classes on <html>:
+     tb-nav-left       the app bar becomes a left sidebar
+     tb-nav-collapsed  the left sidebar shrinks to a rail of icons */
+
+.tb-app-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+.tb-app-shell [hidden] { display: none !important; }
+
+/* ------------------------------------------------------------------------------------------
+   App bar: brand, the pipeline stages as tabs, tools and the account on the right.
+   ------------------------------------------------------------------------------------------ */
+
+.tb-appbar {
+  position: sticky;
+  top: 0;
+  z-index: var(--tb-z-dropdown);
+  box-sizing: border-box;
+  display: flex;
+  flex: none;
+  align-items: stretch;
+  gap: var(--tb-space-6);
+  height: var(--tb-space-12);
+  padding: 0 var(--tb-space-2) 0 var(--tb-space-4);
+  background: var(--tb-bg-surface);
+  border-bottom: var(--tb-border-width) solid var(--tb-border);
+}
+
+.tb-appbar-brand {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--tb-space-3);
+  font-size: var(--tb-text-lg);
+  font-weight: var(--tb-weight-semibold);
+}
+.tb-appbar-brand-name {
+  font-family: var(--tb-font-brand);
+  font-size: var(--tb-text-xl);
+  font-weight: var(--tb-weight-regular);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* The stack: three tablets seen from the side, each shifted a step to the right, in the brand
+   colours. Usable on its own wherever the brand appears, at any size set with width and height:
+   the slabs are drawn in container units, so they scale with the mark. The top slab is the
+   element's ::before; the two below are its shadows, so they keep its rounded corners.
+   --_split is extra shift per step, animated on hover so the stack fans out. */
+@property --_split {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+.tb-brand-mark {
+  --_split: 0px;
+  position: relative;
+  display: inline-block;
+  flex: none;
+  width: var(--tb-space-3);
+  height: var(--tb-space-3);
+  container-type: size;
+}
+.tb-brand-mark::before {
+  content: "";
+  position: absolute;
+  top: 12.5cqh;
+  left: 8.3cqw;
+  width: 62.5cqw;
+  height: 20.8cqh;
+  background: var(--tb-brand-1);
+  border-radius: 5cqw;
+  box-shadow:
+    calc(10.4cqw + var(--_split)) 27.1cqh 0 var(--tb-brand-3),
+    calc(20.8cqw + var(--_split) * 2) 54.2cqh 0 var(--tb-brand-2);
+}
+/* A brand mark that opens on hover: set --_split to --_open, and each slab slides a further tenth
+   of the mark's size (--_size) to the right, then back when the pointer leaves. Put --_split in
+   the mark's transition. The app bar's brand does this. */
+.tb-brand-mark { --_open: calc(var(--_size, 12px) / 10); transition: --_split calc(var(--tb-duration) * 3) var(--tb-ease); }
+.tb-appbar-brand:is(:hover, :focus-visible) .tb-brand-mark { --_split: var(--_open); }
+@media (prefers-reduced-motion: reduce) {
+  .tb-brand-mark { transition: none !important; }
+}
+
+/* Navigation: tb-tabs whose underline sits on the app bar's own bottom border. */
+.tb-appbar-nav {
+  gap: var(--tb-space-3);
+  min-width: 0;
+  box-shadow: none;
+  /* Submenus drop out of the bar, so the tab row must not clip them. */
+  overflow: visible;
+}
+.tb-appbar-nav .tb-tab {
+  gap: var(--tb-space-2);
+  height: 100%;
+  text-decoration: none;
+}
+/* Badge: how much waits for the analyst at that stage. Only that, never an inventory count. */
+.tb-appbar-nav-badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: var(--tb-space-4);
+  height: var(--tb-space-4);
+  padding: 0 5px;
+  font-size: var(--tb-text-xs);
+  font-weight: var(--tb-weight-semibold);
+  line-height: 1;
+  color: var(--tb-fg-link);
+  background: var(--tb-accent-soft);
+  border-radius: var(--tb-radius-full);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Stage with a submenu: the tab, a small chevron, and the submenu. */
+.tb-appbar-nav-item {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+}
+.tb-appbar-nav-toggle {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  align-self: center;
+  width: var(--tb-control-sm);
+  height: var(--tb-control-sm);
+  margin-left: calc(var(--tb-space-1) * -1);
+  padding: 0;
+  color: var(--tb-fg-muted);
+  background: none;
+  border: 0;
+  border-radius: var(--tb-radius-sm);
+  cursor: pointer;
+}
+.tb-appbar-nav-toggle > .tb-icon { width: var(--tb-space-3); height: var(--tb-space-3); transition: transform var(--tb-duration) var(--tb-ease); }
+.tb-appbar-nav-toggle:hover { color: var(--tb-fg); background: var(--tb-bg-hover); }
+.tb-appbar-nav-toggle:focus-visible { outline: 2px solid var(--tb-border-focus); outline-offset: 1px; }
+.tb-appbar-nav-item.is-open > .tb-appbar-nav-toggle > .tb-icon { transform: rotate(180deg); }
+
+/* On top: the submenu drops below the bar, aligned with the tab. */
+.tb-appbar-submenu {
+  position: absolute;
+  top: calc(100% - var(--tb-space-1));
+  left: 0;
+  z-index: var(--tb-z-dropdown);
+  display: none;
+  min-width: 220px;
+  padding: var(--tb-space-1) 0;
+}
+.tb-appbar-nav-item.is-open > .tb-appbar-submenu { display: block; animation: tb-submenu-in var(--tb-duration) var(--tb-ease); }
+@keyframes tb-submenu-in { from { opacity: 0; transform: translateY(-4px); } }
+@media (prefers-reduced-motion: reduce) { .tb-appbar-nav-item.is-open > .tb-appbar-submenu { animation: none; } }
+
+/* Tools next to the account: collapse (left sidebar only) and move the menu. */
+.tb-appbar-tools {
+  display: flex;
+  flex: none;
+  align-self: center;
+  align-items: center;
+  gap: var(--tb-space-1);
+}
+.tb-appbar-dock { flex: none; align-self: center; }
+.tb-appbar-collapse { display: none; }
+
+/* Icons that swap with the dock and collapse state. */
+.tb-appbar-when-left,
+.tb-appbar-when-collapsed { display: none; }
+
+/* Account: avatar, name and organisation. The menu opens below, aligned right. */
+.tb-appbar-account { display: flex; align-self: center; }
+.tb-appbar-account > .tb-popover { min-width: 260px; }
+.tb-appbar-account-trigger {
+  display: flex;
+  align-items: center;
+  gap: var(--tb-space-2);
+  padding: var(--tb-space-1) var(--tb-space-2);
+  font: inherit;
+  color: var(--tb-fg);
+  text-align: left;
+  background: none;
+  border: 0;
+  border-radius: var(--tb-radius-md);
+  cursor: pointer;
+}
+.tb-appbar-account-trigger:hover,
+.tb-appbar-account-trigger[aria-expanded="true"] { background: var(--tb-bg-hover); }
+.tb-appbar-account-trigger:focus-visible {
+  outline: 2px solid var(--tb-border-focus);
+  outline-offset: 1px;
+}
+.tb-appbar-account-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: var(--tb-leading-tight);
+}
+.tb-appbar-account-name { font-weight: var(--tb-weight-medium); white-space: nowrap; }
+.tb-appbar-account-org { font-size: var(--tb-text-sm); color: var(--tb-fg-muted); white-space: nowrap; }
+.tb-appbar-account-chevron { flex: none; color: var(--tb-fg-muted); }
+/* The heading of the account menu is the e-mail address, so it keeps its case. */
+.tb-appbar-account .tb-menu-heading {
+  overflow: hidden;
+  letter-spacing: 0;
+  text-transform: none;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* ------------------------------------------------------------------------------------------
+   Left dock: the same app bar as a sidebar
+   ------------------------------------------------------------------------------------------ */
+
+.tb-nav-left .tb-app-shell { flex-direction: row; }
+.tb-nav-left .tb-appbar {
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--tb-space-2);
+  width: 232px;
+  height: 100vh;
+  padding: var(--tb-space-3) var(--tb-space-2);
+  border-bottom: 0;
+  border-right: var(--tb-border-width) solid var(--tb-border);
+}
+.tb-nav-left .tb-appbar-brand { height: var(--tb-control-lg); padding: 0 var(--tb-space-2); }
+.tb-nav-left .tb-appbar-nav { flex-direction: column; gap: var(--tb-space-1); overflow: visible; }
+.tb-nav-left .tb-appbar-nav .tb-tab {
+  height: var(--tb-control-md);
+  padding: 0 var(--tb-space-2);
+  border-radius: var(--tb-radius-md);
+}
+.tb-nav-left .tb-appbar-nav-label { flex: 1; }
+.tb-nav-left .tb-appbar-nav .tb-tab:hover { background: var(--tb-bg-hover); }
+.tb-nav-left .tb-appbar-nav .tb-tab.is-active { color: var(--tb-fg-link); background: var(--tb-bg-selected); }
+/* The active mark moves from an underline to a bar on the left edge. */
+.tb-nav-left .tb-appbar-nav .tb-tab::after {
+  top: var(--tb-space-1);
+  right: auto;
+  bottom: var(--tb-space-1);
+  left: 0;
+  width: 2px;
+  height: auto;
+}
+.tb-nav-left .tb-appbar-tools { align-self: flex-start; }
+.tb-nav-left .tb-appbar-dock { align-self: flex-start; }
+.tb-nav-left .tb-appbar-collapse { display: inline-flex; }
+.tb-nav-left .tb-appbar-when-top { display: none; }
+.tb-nav-left .tb-appbar-when-left { display: inline-block; }
+.tb-nav-left .tb-appbar-account { align-self: stretch; }
+.tb-nav-left .tb-appbar-account-trigger { width: 100%; }
+.tb-nav-left .tb-appbar-account-text { flex: 1; }
+/* At the bottom of the sidebar the account menu opens upwards. */
+.tb-nav-left .tb-appbar-account > .tb-popover {
+  top: auto;
+  right: auto;
+  bottom: calc(100% + var(--tb-space-1));
+  left: 0;
+}
+.tb-nav-left .tb-page { min-width: 0; }
+
+/* Collapsed: a rail of icons. Applies only when the menu is on the left.
+   The rail is as wide as the column the icons already sit in, so collapsing only narrows the bar.
+   The icons keep their place, the names fade and the bar clips them. Closing, the names fade
+   first; opening, they wait for the bar to widen. The tools wrap upwards, so the collapse button
+   stays under the pointer. */
+.tb-nav-left .tb-appbar { transition: width var(--tb-duration-slow) var(--tb-ease); }
+.tb-nav-left .tb-appbar-brand { padding-left: calc((var(--tb-space-8) - var(--tb-space-3)) / 2); }
+.tb-nav-left :is(.tb-appbar-brand, .tb-appbar-nav .tb-tab, .tb-appbar-account-trigger) { overflow: hidden; }
+.tb-nav-left :is(.tb-appbar-brand-name, .tb-appbar-nav-label, .tb-appbar-nav-badge, .tb-appbar-nav-toggle, .tb-appbar-account-text, .tb-appbar-account-chevron) {
+  transition: opacity var(--tb-duration) var(--tb-ease) var(--tb-duration-fast), visibility 0s linear 0s;
+}
+.tb-nav-left .tb-appbar-tools { flex-wrap: wrap-reverse; }
+.tb-nav-left .tb-appbar-account-trigger { transition: padding var(--tb-duration-slow) var(--tb-ease); }
+
+.tb-nav-left.tb-nav-collapsed .tb-appbar { width: var(--tb-space-12); }
+.tb-nav-left.tb-nav-collapsed :is(.tb-appbar-brand-name, .tb-appbar-nav-label, .tb-appbar-nav-badge, .tb-appbar-nav-toggle, .tb-appbar-account-text, .tb-appbar-account-chevron) {
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity var(--tb-duration-fast) var(--tb-ease), visibility 0s linear var(--tb-duration-fast);
+}
+.tb-nav-left.tb-nav-collapsed .tb-appbar-when-expanded { display: none; }
+.tb-nav-left.tb-nav-collapsed .tb-appbar-when-collapsed { display: inline-block; }
+.tb-nav-left.tb-nav-collapsed .tb-appbar-account-trigger { padding-left: calc((var(--tb-space-8) - var(--tb-control-md)) / 2); }
+
+/* In the sidebar the collapse button comes first, so on the rail it sits at the bottom of the
+   stack, where it was. */
+.tb-nav-left .tb-appbar-collapse { order: -1; }
+
+/* Moving the menu. While the shell script moves it inside a view transition it sets tb-docking on
+   <html>. Each part of the bar gets a name, so the browser flies it from its old place to its new
+   one: the bar reshapes from a strip into a column, the brand, stages, tools and account travel,
+   and the page slides. Snapshots are never stretched, only moved. A stage's tab
+   and its chevron travel separately, since the chevron sits at the far edge of the sidebar. */
+.tb-docking .tb-appbar { view-transition-name: tb-appbar; }
+.tb-docking .tb-app-shell > .tb-page { view-transition-name: tb-page; }
+.tb-docking .tb-appbar-brand { view-transition-name: tb-appbar-brand; }
+.tb-docking .tb-appbar-tools { view-transition-name: tb-appbar-tools; }
+.tb-docking .tb-appbar-account { view-transition-name: tb-appbar-account; }
+.tb-docking .tb-appbar-nav-item:nth-child(1) > .tb-tab { view-transition-name: tb-appbar-stage-1; }
+.tb-docking .tb-appbar-nav-item:nth-child(1) > .tb-appbar-nav-toggle { view-transition-name: tb-appbar-stage-1-menu; }
+.tb-docking .tb-appbar-nav-item:nth-child(2) > .tb-tab { view-transition-name: tb-appbar-stage-2; }
+.tb-docking .tb-appbar-nav-item:nth-child(2) > .tb-appbar-nav-toggle { view-transition-name: tb-appbar-stage-2-menu; }
+.tb-docking .tb-appbar-nav-item:nth-child(3) > .tb-tab { view-transition-name: tb-appbar-stage-3; }
+.tb-docking .tb-appbar-nav-item:nth-child(3) > .tb-appbar-nav-toggle { view-transition-name: tb-appbar-stage-3-menu; }
+.tb-docking .tb-appbar-nav-item:nth-child(4) > .tb-tab { view-transition-name: tb-appbar-stage-4; }
+.tb-docking .tb-appbar-nav-item:nth-child(4) > .tb-appbar-nav-toggle { view-transition-name: tb-appbar-stage-4-menu; }
+.tb-docking .tb-appbar-nav-item:nth-child(5) > .tb-tab { view-transition-name: tb-appbar-stage-5; }
+.tb-docking .tb-appbar-nav-item:nth-child(5) > .tb-appbar-nav-toggle { view-transition-name: tb-appbar-stage-5-menu; }
+.tb-docking .tb-appbar-nav-item:nth-child(6) > .tb-tab { view-transition-name: tb-appbar-stage-6; }
+.tb-docking .tb-appbar-nav-item:nth-child(6) > .tb-appbar-nav-toggle { view-transition-name: tb-appbar-stage-6-menu; }
+.tb-docking .tb-appbar-nav-item:nth-child(7) > .tb-tab { view-transition-name: tb-appbar-stage-7; }
+.tb-docking .tb-appbar-nav-item:nth-child(7) > .tb-appbar-nav-toggle { view-transition-name: tb-appbar-stage-7-menu; }
+.tb-docking .tb-appbar-nav-item:nth-child(8) > .tb-tab { view-transition-name: tb-appbar-stage-8; }
+.tb-docking .tb-appbar-nav-item:nth-child(8) > .tb-appbar-nav-toggle { view-transition-name: tb-appbar-stage-8-menu; }
+.tb-docking::view-transition-group(*) {
+  animation-duration: var(--tb-duration-slow);
+  animation-timing-function: var(--tb-ease);
+}
+.tb-docking::view-transition-old(*),
+.tb-docking::view-transition-new(*) {
+  width: 100%;
+  height: 100%;
+  overflow: clip;
+  object-fit: none;
+  object-position: left center;
+}
+/* The bar is clipped to its moving box, so the strip retracts to the left while the column
+   unrolls downwards. */
+.tb-docking::view-transition-group(tb-appbar) { overflow: clip; }
+.tb-docking::view-transition-old(tb-appbar),
+.tb-docking::view-transition-new(tb-appbar),
+.tb-docking::view-transition-new(tb-page) { object-position: left top; }
+/* Every part travels as it will look, with no cross-fade, so no text ever shows twice. The bar
+   is the one exception: it keeps its old strip too, which it retracts while the column unrolls. */
+.tb-docking::view-transition-old(*) { display: none; }
+.tb-docking::view-transition-new(*) { animation: none; opacity: 1; }
+.tb-docking::view-transition-old(tb-appbar) { display: block; animation: none; opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .tb-nav-left :is(.tb-appbar, .tb-appbar-account-trigger, .tb-appbar-brand-name, .tb-appbar-nav-label, .tb-appbar-nav-badge, .tb-appbar-nav-toggle, .tb-appbar-account-text, .tb-appbar-account-chevron) { transition: none; }
+}
+
+/* ------------------------------------------------------------------------------------------
+   Page frame: the page, its toolbar and its main canvas
+   ------------------------------------------------------------------------------------------ */
+
+.tb-page {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--tb-bg-canvas);
+}
+
+/* Page toolbar: title, the context it shows (case, model run), then the page's actions. It sits
+   on the canvas with the cards, apart from the app bar, because it acts on the data below it. */
+.tb-page-toolbar {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tb-space-2);
+  padding: var(--tb-space-5) var(--tb-space-3) var(--tb-space-1);
+}
+.tb-page-title {
+  margin: 0 var(--tb-space-2) 0 0;
+  font-size: var(--tb-text-lg);
+  font-weight: var(--tb-weight-semibold);
+  line-height: var(--tb-leading-tight);
+  white-space: nowrap;
+  color: var(--tb-fg);
+}
+.tb-page-context {
+  display: flex;
+  align-items: center;
+  gap: var(--tb-space-2);
+  min-width: 0;
+}
+.tb-page-context > .tb-select { width: auto; max-width: 280px; }
+.tb-page-actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--tb-space-2);
+}
+
+/* Fitted page, for work screens with panes side by side. The window is the frame: the app bar
+   and the page toolbar stay put, the main fills exactly what is left, and each pane in it scrolls
+   on its own. The page itself never scrolls, so no scroll area sits inside another. It stays fitted
+   with a saved layout and while the layout editor is open. Below 1181px wide it scrolls as a
+   normal page. */
+@media (min-width: 1181px) {
+  .tb-app-shell:has(> .tb-page--fit) { height: 100vh; overflow: hidden; }
+  .tb-page--fit { min-height: 0; }
+  .tb-page--fit > .tb-page-main { flex: 1; min-height: 0; }
+}
+
+/* Main canvas. A column of cards by default; a page sets its own grid on top. */
+.tb-page-main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--tb-space-3);
+  min-width: 0;
+  padding: var(--tb-space-3);
+}
+
+
+/* Left sidebar: the submenu flies out beside its tab, level with it, the same popover as on top.
+   It touches the tab, with no gap, so the pointer can cross from one to the other without leaving
+   the stage and closing it. The chevron points the way the menu opens. */
+.tb-nav-left .tb-appbar-nav-item { flex-direction: column; }
+.tb-nav-left .tb-appbar-nav-item > .tb-tab { padding-right: calc(var(--tb-control-sm) + var(--tb-space-2)); }
+.tb-nav-left .tb-appbar-nav-toggle {
+  position: absolute;
+  top: calc((var(--tb-control-md) - var(--tb-control-sm)) / 2);
+  right: var(--tb-space-1);
+  margin: 0;
+}
+.tb-nav-left .tb-appbar-nav-toggle > .tb-icon,
+.tb-nav-left .tb-appbar-nav-item.is-open > .tb-appbar-nav-toggle > .tb-icon { transform: rotate(-90deg); }
+.tb-nav-left .tb-appbar-submenu {
+  top: 0;
+  left: 100%;
+}
+.tb-nav-left .tb-appbar-nav-item.is-open > .tb-appbar-submenu { animation-name: tb-submenu-in-side; }
+@keyframes tb-submenu-in-side { from { opacity: 0; transform: translateX(calc(var(--tb-space-1) * -1)); } }
+
+/* Collapsed rail: the badge becomes a dot on the icon's corner, so the rail still says something waits. */
+.tb-nav-left.tb-nav-collapsed .tb-appbar-nav-badge {
+  position: absolute;
+  top: var(--tb-space-1);
+  left: calc(50% + var(--tb-space-1));
+  width: var(--tb-space-2);
+  min-width: 0;
+  height: var(--tb-space-2);
+  padding: 0;
+  color: transparent;
+  background: var(--tb-accent);
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Collapsed rail: the chevron hides, the submenu still flies out from the rail's edge. */
+.tb-nav-left.tb-nav-collapsed .tb-appbar-nav-toggle { pointer-events: none; }
+.tb-nav-left.tb-nav-collapsed .tb-appbar-nav-item > .tb-tab { padding-right: 0; }

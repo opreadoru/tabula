@@ -1,0 +1,944 @@
+/* Tabula controls: button, input, select, checkbox, radio, switch, tag, menu, popover,
+   tooltip. Every value reads from tokens.css. Private variables start with --_ch and are
+   internal to one element; do not set them from outside. */
+
+/* ------------------------------------------------------------------------------------------
+   Button
+   ------------------------------------------------------------------------------------------ */
+
+.tb-button {
+  --_tb-btn-h: var(--tb-control-md);
+  --_tb-btn-bg: var(--tb-bg-surface);
+  --_tb-btn-fg: var(--tb-fg);
+  --_tb-btn-border: var(--tb-border-strong);
+  position: relative;
+  box-sizing: border-box;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: var(--tb-space-2);
+  height: var(--_tb-btn-h);
+  margin: 0;
+  padding: 0 var(--tb-space-3);
+  font-family: var(--tb-font);
+  font-size: var(--tb-text-md);
+  font-weight: var(--tb-weight-medium);
+  line-height: var(--tb-leading-tight);
+  color: var(--_tb-btn-fg);
+  background-color: var(--_tb-btn-bg);
+  background-image: none;
+  border: var(--tb-border-width) solid var(--_tb-btn-border);
+  border-radius: var(--tb-radius-md);
+  text-decoration: none;
+  white-space: nowrap;
+  vertical-align: middle;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    background-color var(--tb-duration-fast) var(--tb-ease),
+    border-color var(--tb-duration-fast) var(--tb-ease),
+    color var(--tb-duration-fast) var(--tb-ease);
+}
+.tb-button:hover { text-decoration: none; }
+.tb-button > .tb-icon { flex: none; }
+
+/* Hover and press darken the fill with an overlay, so the same rule works on any variant. */
+.tb-button:hover:not(:disabled, .is-disabled, [aria-disabled="true"], .is-loading) {
+  background-image: linear-gradient(var(--tb-bg-hover), var(--tb-bg-hover));
+}
+.tb-button:active:not(:disabled, .is-disabled, [aria-disabled="true"], .is-loading),
+.tb-button[aria-expanded="true"] {
+  background-image: linear-gradient(var(--tb-bg-active), var(--tb-bg-active));
+}
+
+/* Active means selected or pressed in: a view switch, a toggled filter. */
+.tb-button.is-active,
+.tb-button[aria-pressed="true"] {
+  --_tb-btn-bg: var(--tb-bg-selected);
+  --_tb-btn-fg: var(--tb-fg-link);
+  background-image: none;
+}
+
+.tb-button:focus-visible {
+  outline: 2px solid var(--tb-border-focus);
+  outline-offset: 1px;
+}
+
+/* Variants */
+.tb-button--primary {
+  --_tb-btn-bg: var(--tb-accent);
+  --_tb-btn-fg: var(--tb-fg-on-accent);
+  --_tb-btn-border: var(--tb-accent);
+}
+.tb-button--primary:hover:not(:disabled, .is-disabled, [aria-disabled="true"], .is-loading) {
+  --_tb-btn-bg: var(--tb-accent-hover);
+  --_tb-btn-border: var(--tb-accent-hover);
+  background-image: none;
+}
+.tb-button--primary:active:not(:disabled, .is-disabled, [aria-disabled="true"], .is-loading),
+.tb-button--primary.is-active,
+.tb-button--primary[aria-pressed="true"],
+.tb-button--primary[aria-expanded="true"] {
+  --_tb-btn-bg: var(--tb-accent-active);
+  --_tb-btn-fg: var(--tb-fg-on-accent);
+  --_tb-btn-border: var(--tb-accent-active);
+  background-image: none;
+}
+
+.tb-button--danger {
+  --_tb-btn-bg: var(--tb-danger);
+  --_tb-btn-fg: var(--tb-fg-on-accent);
+  --_tb-btn-border: var(--tb-danger);
+}
+.tb-button--danger:hover:not(:disabled, .is-disabled, [aria-disabled="true"], .is-loading),
+.tb-button--danger:active:not(:disabled, .is-disabled, [aria-disabled="true"], .is-loading),
+.tb-button--danger.is-active {
+  --_tb-btn-bg: var(--tb-danger-hover);
+  --_tb-btn-fg: var(--tb-fg-on-accent);
+  --_tb-btn-border: var(--tb-danger-hover);
+  background-image: none;
+}
+
+.tb-button--minimal {
+  --_tb-btn-bg: transparent;
+  --_tb-btn-border: transparent;
+}
+.tb-button--minimal.is-active,
+.tb-button--minimal[aria-pressed="true"] {
+  --_tb-btn-bg: var(--tb-bg-selected);
+}
+
+/* Sizes. Icon comes last so its zero padding wins over a size. */
+.tb-button--sm {
+  --_tb-btn-h: var(--tb-control-sm);
+  gap: var(--tb-space-1);
+  padding: 0 var(--tb-space-2);
+  font-size: var(--tb-text-sm);
+}
+.tb-button--lg {
+  --_tb-btn-h: var(--tb-control-lg);
+  padding: 0 var(--tb-space-4);
+  font-size: var(--tb-text-lg);
+}
+.tb-button--icon {
+  width: var(--_tb-btn-h);
+  padding: 0;
+}
+
+/* Disabled */
+.tb-button:disabled,
+.tb-button.is-disabled,
+.tb-button[aria-disabled="true"] {
+  opacity: var(--tb-opacity-disabled);
+  cursor: not-allowed;
+}
+
+/* Loading. The label keeps its width and turns transparent, a spinner sits on top. */
+.tb-button.is-loading {
+  color: transparent;
+  cursor: progress;
+  pointer-events: none;
+}
+.tb-button.is-loading::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  box-sizing: border-box;
+  width: var(--tb-space-3);
+  height: var(--tb-space-3);
+  margin: calc(var(--tb-space-3) / -2) 0 0 calc(var(--tb-space-3) / -2);
+  border: 2px solid var(--_tb-btn-fg);
+  border-right-color: transparent;
+  border-radius: var(--tb-radius-full);
+  animation: tb-button-spin 700ms linear infinite;
+}
+@keyframes tb-button-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Button group: buttons joined edge to edge, one shared border between them. */
+.tb-button-group {
+  display: inline-flex;
+  vertical-align: middle;
+}
+.tb-button-group > .tb-button { border-radius: 0; }
+.tb-button-group > .tb-button:first-child {
+  border-top-left-radius: var(--tb-radius-md);
+  border-bottom-left-radius: var(--tb-radius-md);
+}
+.tb-button-group > .tb-button:last-child {
+  border-top-right-radius: var(--tb-radius-md);
+  border-bottom-right-radius: var(--tb-radius-md);
+}
+.tb-button-group > .tb-button + .tb-button {
+  margin-left: calc(var(--tb-border-width) * -1);
+}
+.tb-button-group > .tb-button:hover,
+.tb-button-group > .tb-button:focus-visible,
+.tb-button-group > .tb-button.is-active,
+.tb-button-group > .tb-button[aria-pressed="true"] {
+  z-index: 1;
+}
+
+/* ------------------------------------------------------------------------------------------
+   Input, textarea, input group, field
+   ------------------------------------------------------------------------------------------ */
+
+.tb-input {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  min-width: 0;
+  height: var(--tb-control-md);
+  margin: 0;
+  padding: 0 var(--tb-space-2);
+  font-family: var(--tb-font);
+  font-size: var(--tb-text-md);
+  line-height: var(--tb-leading-tight);
+  color: var(--tb-fg);
+  background-color: var(--tb-bg-raised);
+  border: var(--tb-border-width) solid var(--tb-border-strong);
+  border-radius: var(--tb-radius-md);
+  appearance: none;
+  transition: border-color var(--tb-duration-fast) var(--tb-ease);
+}
+.tb-input::placeholder {
+  color: var(--tb-fg-subtle);
+  opacity: 1;
+}
+textarea.tb-input {
+  height: auto;
+  min-height: calc(var(--tb-control-lg) * 2);
+  padding: var(--tb-space-2);
+  line-height: var(--tb-leading);
+  resize: vertical;
+}
+.tb-input--sm {
+  height: var(--tb-control-sm);
+  font-size: var(--tb-text-sm);
+}
+.tb-input--lg {
+  height: var(--tb-control-lg);
+  padding: 0 var(--tb-space-3);
+  font-size: var(--tb-text-lg);
+}
+
+.tb-input:focus-visible {
+  border-color: var(--tb-border-focus);
+  outline: 2px solid var(--tb-border-focus);
+  outline-offset: 1px;
+}
+.tb-input[readonly] {
+  background-color: var(--tb-bg-sunken);
+}
+.tb-input:disabled {
+  background-color: var(--tb-bg-sunken);
+  opacity: var(--tb-opacity-disabled);
+  cursor: not-allowed;
+}
+.tb-input.is-invalid,
+.tb-input[aria-invalid="true"],
+.tb-field.is-invalid .tb-input {
+  border-color: var(--tb-danger);
+}
+
+/* Input group: the border sits on the group, so a leading icon and a trailing button live
+   inside it. The trailing button should be tb-button--sm or tb-button--icon. */
+.tb-input-group {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  height: var(--tb-control-md);
+  color: var(--tb-fg);
+  background-color: var(--tb-bg-raised);
+  border: var(--tb-border-width) solid var(--tb-border-strong);
+  border-radius: var(--tb-radius-md);
+  transition: border-color var(--tb-duration-fast) var(--tb-ease);
+}
+.tb-input-group > .tb-input {
+  flex: 1 1 auto;
+  height: 100%;
+  background-color: transparent;
+  border: 0;
+  border-radius: 0;
+}
+.tb-input-group > .tb-input:focus-visible { outline: none; }
+.tb-input-group > .tb-input:disabled {
+  background-color: transparent;
+  opacity: 1;
+}
+.tb-input-group > .tb-icon {
+  flex: none;
+  margin-left: var(--tb-space-2);
+  color: var(--tb-fg-muted);
+  pointer-events: none;
+}
+.tb-input-group > .tb-button {
+  --_tb-btn-h: var(--tb-control-sm);
+  flex: none;
+  margin-right: calc((var(--tb-control-md) - var(--tb-control-sm)) / 2 - var(--tb-border-width));
+}
+.tb-input-group:has(> .tb-input:focus-visible) {
+  border-color: var(--tb-border-focus);
+  outline: 2px solid var(--tb-border-focus);
+  outline-offset: 1px;
+}
+.tb-input-group.is-invalid,
+.tb-input-group:has(> .tb-input[aria-invalid="true"]),
+.tb-field.is-invalid .tb-input-group {
+  border-color: var(--tb-danger);
+}
+.tb-input-group:has(> .tb-input:disabled) {
+  background-color: var(--tb-bg-sunken);
+  opacity: var(--tb-opacity-disabled);
+  cursor: not-allowed;
+}
+
+/* Field: label, control, help, error. The error shows only when the field is invalid. */
+.tb-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-1);
+  min-width: 0;
+}
+.tb-field-label {
+  font-size: var(--tb-text-sm);
+  font-weight: var(--tb-weight-medium);
+  line-height: var(--tb-leading-tight);
+  color: var(--tb-fg);
+}
+.tb-field-help,
+.tb-field-error {
+  margin: 0;
+  font-size: var(--tb-text-sm);
+  line-height: var(--tb-leading-tight);
+}
+.tb-field-help { color: var(--tb-fg-muted); }
+.tb-field-error {
+  display: none;
+  color: var(--tb-danger);
+}
+.tb-field.is-invalid .tb-field-error { display: block; }
+
+/* ------------------------------------------------------------------------------------------
+   Select. The native element, with the chevron drawn by two gradients.
+   ------------------------------------------------------------------------------------------ */
+
+.tb-select {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  min-width: 0;
+  height: var(--tb-control-md);
+  margin: 0;
+  padding: 0 calc(var(--tb-space-3) + 10px + var(--tb-space-2)) 0 var(--tb-space-2);
+  font-family: var(--tb-font);
+  font-size: var(--tb-text-md);
+  line-height: var(--tb-leading-tight);
+  color: var(--tb-fg);
+  background-color: var(--tb-bg-raised);
+  background-image:
+    linear-gradient(45deg, transparent 38%, var(--tb-fg-muted) 38%, var(--tb-fg-muted) 62%, transparent 62%),
+    linear-gradient(135deg, transparent 38%, var(--tb-fg-muted) 38%, var(--tb-fg-muted) 62%, transparent 62%);
+  background-position:
+    right calc(var(--tb-space-3) + 5px) center,
+    right var(--tb-space-3) center;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+  border: var(--tb-border-width) solid var(--tb-border-strong);
+  border-radius: var(--tb-radius-md);
+  appearance: none;
+  cursor: pointer;
+  transition: border-color var(--tb-duration-fast) var(--tb-ease);
+}
+.tb-select option {
+  color: var(--tb-fg);
+  background-color: var(--tb-bg-raised);
+}
+.tb-select--sm {
+  height: var(--tb-control-sm);
+  font-size: var(--tb-text-sm);
+}
+.tb-select--lg {
+  height: var(--tb-control-lg);
+  padding-left: var(--tb-space-3);
+  font-size: var(--tb-text-lg);
+}
+.tb-select[multiple],
+.tb-select[size]:not([size="1"]) {
+  height: auto;
+  padding: var(--tb-space-1);
+  background-image: none;
+}
+.tb-select:focus-visible {
+  border-color: var(--tb-border-focus);
+  outline: 2px solid var(--tb-border-focus);
+  outline-offset: 1px;
+}
+.tb-select:disabled {
+  background-color: var(--tb-bg-sunken);
+  opacity: var(--tb-opacity-disabled);
+  cursor: not-allowed;
+}
+.tb-select.is-invalid,
+.tb-select[aria-invalid="true"],
+.tb-field.is-invalid .tb-select {
+  border-color: var(--tb-danger);
+}
+
+/* ------------------------------------------------------------------------------------------
+   Checkbox, radio, switch. The native input stays in the page for keyboard and screen
+   readers, hidden, and the span after it draws the control.
+   ------------------------------------------------------------------------------------------ */
+
+.tb-checkbox,
+.tb-radio,
+.tb-switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tb-space-2);
+  min-height: var(--tb-control-sm);
+  font-size: var(--tb-text-md);
+  line-height: var(--tb-leading-tight);
+  color: var(--tb-fg);
+  vertical-align: middle;
+  cursor: pointer;
+  user-select: none;
+}
+.tb-checkbox > input,
+.tb-radio > input,
+.tb-switch > input {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* The box is the ::before of the span that follows the input; the span also holds the label. */
+.tb-checkbox > input + span,
+.tb-radio > input + span {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tb-space-2);
+}
+.tb-checkbox > input + span::before,
+.tb-radio > input + span::before {
+  content: "";
+  flex: none;
+  box-sizing: border-box;
+  width: 14px;
+  height: 14px;
+  background-color: var(--tb-bg-raised);
+  border: var(--tb-border-width) solid var(--tb-border-strong);
+  border-radius: var(--tb-radius-sm);
+  transition:
+    background-color var(--tb-duration-fast) var(--tb-ease),
+    border-color var(--tb-duration-fast) var(--tb-ease);
+}
+.tb-radio > input + span::before { border-radius: var(--tb-radius-full); }
+
+.tb-checkbox:hover > input:not(:disabled) + span::before,
+.tb-radio:hover > input:not(:disabled) + span::before {
+  border-color: var(--tb-fg-muted);
+}
+.tb-checkbox > input:checked + span::before,
+.tb-checkbox > input:indeterminate + span::before,
+.tb-radio > input:checked + span::before {
+  background-color: var(--tb-accent);
+  border-color: var(--tb-accent);
+}
+.tb-checkbox:hover > input:checked:not(:disabled) + span::before,
+.tb-checkbox:hover > input:indeterminate:not(:disabled) + span::before,
+.tb-radio:hover > input:checked:not(:disabled) + span::before {
+  background-color: var(--tb-accent-hover);
+  border-color: var(--tb-accent-hover);
+}
+
+/* Check mark */
+.tb-checkbox > input + span::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 5px;
+  box-sizing: border-box;
+  width: 4px;
+  height: 8px;
+  border: solid var(--tb-fg-on-accent);
+  border-width: 0 2px 2px 0;
+  opacity: 0;
+  transform: translateY(-60%) rotate(45deg);
+}
+.tb-checkbox > input:checked + span::after { opacity: 1; }
+
+/* Indeterminate bar. Wins over checked, as the browser does. */
+.tb-checkbox > input:indeterminate + span::after {
+  left: 3px;
+  width: 8px;
+  height: 2px;
+  background-color: var(--tb-fg-on-accent);
+  border: 0;
+  opacity: 1;
+  transform: translateY(-50%);
+}
+
+/* Radio dot */
+.tb-radio > input + span::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 4px;
+  width: 6px;
+  height: 6px;
+  margin-top: -3px;
+  background-color: var(--tb-fg-on-accent);
+  border-radius: var(--tb-radius-full);
+  opacity: 0;
+}
+.tb-radio > input:checked + span::after { opacity: 1; }
+
+.tb-checkbox > input:focus-visible + span::before,
+.tb-radio > input:focus-visible + span::before {
+  outline: 2px solid var(--tb-border-focus);
+  outline-offset: 1px;
+}
+
+/* Switch: a track with a square thumb. Put data-on and data-off on the track for an inner
+   label; keep them to three characters or less. */
+.tb-switch {
+  --_tb-sw-h: var(--tb-space-4);
+  --_tb-sw-thumb: var(--tb-space-3);
+  --_tb-sw-pad: 2px;
+}
+.tb-switch-track {
+  position: relative;
+  box-sizing: border-box;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: var(--_tb-sw-h);
+  background-color: var(--tb-border-strong);
+  border-radius: var(--tb-radius-md);
+  transition: background-color var(--tb-duration) var(--tb-ease);
+}
+.tb-switch-track::after {
+  content: "";
+  position: absolute;
+  top: var(--_tb-sw-pad);
+  left: var(--_tb-sw-pad);
+  width: var(--_tb-sw-thumb);
+  height: var(--_tb-sw-thumb);
+  background-color: var(--tb-fg-on-accent);
+  border-radius: var(--tb-radius-sm);
+  transition: left var(--tb-duration) var(--tb-ease);
+}
+.tb-switch-track[data-on],
+.tb-switch-track[data-off] {
+  min-width: 40px;
+  padding: 0 var(--tb-space-1) 0 calc(var(--_tb-sw-thumb) + var(--_tb-sw-pad) + var(--tb-space-1));
+}
+.tb-switch-track[data-on]::before,
+.tb-switch-track[data-off]::before {
+  content: attr(data-off);
+  font-size: var(--tb-text-xs);
+  font-weight: var(--tb-weight-semibold);
+  line-height: 1;
+  color: var(--tb-fg);
+}
+.tb-switch:hover > input:not(:disabled) + .tb-switch-track {
+  background-color: var(--tb-fg-subtle);
+}
+.tb-switch > input:checked + .tb-switch-track {
+  background-color: var(--tb-accent);
+}
+.tb-switch:hover > input:checked:not(:disabled) + .tb-switch-track {
+  background-color: var(--tb-accent-hover);
+}
+.tb-switch > input:checked + .tb-switch-track::after {
+  left: calc(100% - var(--_tb-sw-thumb) - var(--_tb-sw-pad));
+}
+.tb-switch > input:checked + .tb-switch-track[data-on],
+.tb-switch > input:checked + .tb-switch-track[data-off] {
+  padding: 0 calc(var(--_tb-sw-thumb) + var(--_tb-sw-pad) + var(--tb-space-1)) 0 var(--tb-space-1);
+}
+.tb-switch > input:checked + .tb-switch-track[data-on]::before,
+.tb-switch > input:checked + .tb-switch-track[data-off]::before {
+  content: attr(data-on);
+  color: var(--tb-fg-on-accent);
+}
+.tb-switch > input:focus-visible + .tb-switch-track {
+  outline: 2px solid var(--tb-border-focus);
+  outline-offset: 1px;
+}
+
+/* Disabled, shared by the three */
+.tb-checkbox > input:disabled ~ *,
+.tb-radio > input:disabled ~ *,
+.tb-switch > input:disabled ~ * {
+  opacity: var(--tb-opacity-disabled);
+  cursor: not-allowed;
+}
+.tb-checkbox:has(> input:disabled),
+.tb-radio:has(> input:disabled),
+.tb-switch:has(> input:disabled) {
+  cursor: not-allowed;
+}
+
+/* ------------------------------------------------------------------------------------------
+   Tag
+   ------------------------------------------------------------------------------------------ */
+
+.tb-tag {
+  --_tb-tag-hue: var(--tb-fg-muted);
+  box-sizing: border-box;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: var(--tb-space-1);
+  max-width: 100%;
+  height: var(--tb-space-5);
+  margin: 0;
+  padding: 0 6px;
+  font-family: var(--tb-font);
+  font-size: var(--tb-text-sm);
+  font-weight: var(--tb-weight-medium);
+  line-height: 1;
+  color: var(--tb-fg);
+  background-color: var(--tb-bg-sunken);
+  background-image: none;
+  border: var(--tb-border-width) solid var(--tb-border);
+  border-radius: var(--tb-radius-sm);
+  text-decoration: none;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.tb-tag > .tb-icon {
+  width: 12px;
+  height: 12px;
+}
+
+/* Minimal sets the neutral text colour first, so a colour variant still wins over it. */
+.tb-tag--minimal { color: var(--tb-fg-muted); }
+
+.tb-tag--accent {
+  --_tb-tag-hue: var(--tb-accent);
+  color: var(--tb-fg-link);
+  background-color: var(--tb-accent-soft);
+  border-color: transparent;
+}
+.tb-tag--danger {
+  --_tb-tag-hue: var(--tb-danger);
+  color: var(--tb-danger-hover);
+  background-color: var(--tb-danger-soft);
+  border-color: transparent;
+}
+.tb-tag--warning {
+  --_tb-tag-hue: var(--tb-warning);
+  color: var(--tb-warning-hover);
+  background-color: var(--tb-warning-soft);
+  border-color: transparent;
+}
+.tb-tag--success {
+  --_tb-tag-hue: var(--tb-success);
+  color: var(--tb-success-hover);
+  background-color: var(--tb-success-soft);
+  border-color: transparent;
+}
+/* AI-suggested is dashed and confirmed is solid, the same code as tb-origin. */
+.tb-tag--ai {
+  --_tb-tag-hue: var(--tb-ai);
+  color: var(--tb-ai);
+  background-color: var(--tb-ai-soft);
+  border-color: var(--tb-ai);
+  border-style: dashed;
+}
+.tb-tag--confirmed {
+  --_tb-tag-hue: var(--tb-confirmed);
+  color: var(--tb-confirmed);
+  background-color: var(--tb-confirmed-soft);
+  border-color: var(--tb-border-strong);
+}
+
+/* In the dark theme the coloured text is too dim on the soft fills, so the text goes
+   neutral and the hue stays in the fill, the dot and the border. */
+.tb-dark .tb-tag--danger,
+.tb-dark .tb-tag--warning,
+.tb-dark .tb-tag--success,
+.tb-dark .tb-tag--ai {
+  color: var(--tb-fg);
+}
+
+.tb-tag.tb-tag--minimal {
+  background-color: transparent;
+  border-color: transparent;
+}
+
+.tb-tag-dot {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  background-color: var(--_tb-tag-hue);
+  border-radius: var(--tb-radius-full);
+}
+
+.tb-tag-remove {
+  box-sizing: border-box;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  margin: 0 -2px 0 0;
+  padding: 0;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  border-radius: var(--tb-radius-sm);
+  opacity: 0.7;
+  cursor: pointer;
+}
+.tb-tag-remove .tb-icon {
+  width: 12px;
+  height: 12px;
+}
+.tb-tag-remove:hover {
+  background-color: var(--tb-bg-active);
+  opacity: 1;
+}
+.tb-tag-remove:focus-visible {
+  outline: 2px solid var(--tb-border-focus);
+  outline-offset: 1px;
+  opacity: 1;
+}
+
+/* Interactive: a tag that is itself a button, such as a filter chip. */
+.tb-tag--interactive {
+  cursor: pointer;
+  transition: background-color var(--tb-duration-fast) var(--tb-ease);
+}
+.tb-tag--interactive:hover:not(:disabled, .is-disabled) {
+  background-image: linear-gradient(var(--tb-bg-hover), var(--tb-bg-hover));
+}
+.tb-tag--interactive:active:not(:disabled, .is-disabled) {
+  background-image: linear-gradient(var(--tb-bg-active), var(--tb-bg-active));
+}
+.tb-tag--interactive.is-active,
+.tb-tag--interactive[aria-pressed="true"] {
+  color: var(--tb-fg-link);
+  background-color: var(--tb-bg-selected);
+  border-color: var(--tb-accent);
+}
+.tb-tag:focus-visible {
+  outline: 2px solid var(--tb-border-focus);
+  outline-offset: 1px;
+}
+.tb-tag:disabled,
+.tb-tag.is-disabled {
+  opacity: var(--tb-opacity-disabled);
+  cursor: not-allowed;
+}
+
+/* ------------------------------------------------------------------------------------------
+   Menu and popover
+   ------------------------------------------------------------------------------------------ */
+
+.tb-menu {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: var(--tb-space-1);
+  list-style: none;
+  font-size: var(--tb-text-md);
+  color: var(--tb-fg);
+}
+.tb-menu-item {
+  box-sizing: border-box;
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--tb-space-2);
+  width: 100%;
+  min-height: var(--tb-control-md);
+  margin: 0;
+  padding: 0 var(--tb-space-2);
+  font-family: var(--tb-font);
+  font-size: var(--tb-text-md);
+  font-weight: var(--tb-weight-regular);
+  line-height: var(--tb-leading-tight);
+  color: var(--tb-fg);
+  text-align: left;
+  text-decoration: none;
+  white-space: nowrap;
+  background: transparent;
+  border: 0;
+  border-radius: var(--tb-radius-sm);
+  cursor: pointer;
+}
+.tb-menu-item:hover { text-decoration: none; }
+.tb-menu-item > .tb-icon {
+  flex: none;
+  width: var(--tb-space-4);
+  height: var(--tb-space-4);
+  color: var(--tb-fg-muted);
+}
+.tb-menu-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tb-menu-hint {
+  flex: none;
+  margin-left: auto;
+  padding-left: var(--tb-space-4);
+  font-size: var(--tb-text-sm);
+  color: var(--tb-fg-muted);
+}
+.tb-menu-item:hover:not(:disabled, .is-disabled, [aria-disabled="true"]) {
+  background-color: var(--tb-bg-hover);
+}
+.tb-menu-item:active:not(:disabled, .is-disabled, [aria-disabled="true"]) {
+  background-color: var(--tb-bg-active);
+}
+.tb-menu-item:focus-visible {
+  outline: 2px solid var(--tb-border-focus);
+  outline-offset: 1px;
+}
+.tb-menu-item.is-active,
+.tb-menu-item[aria-current]:not([aria-current="false"]),
+.tb-menu-item[aria-checked="true"] {
+  color: var(--tb-fg-link);
+  background-color: var(--tb-bg-selected);
+}
+.tb-menu-item.is-active > .tb-icon,
+.tb-menu-item[aria-current]:not([aria-current="false"]) > .tb-icon,
+.tb-menu-item[aria-checked="true"] > .tb-icon {
+  color: inherit;
+}
+.tb-menu-item--danger,
+.tb-menu-item--danger > .tb-icon {
+  color: var(--tb-danger);
+}
+.tb-menu-item:disabled,
+.tb-menu-item.is-disabled,
+.tb-menu-item[aria-disabled="true"] {
+  opacity: var(--tb-opacity-disabled);
+  cursor: not-allowed;
+}
+.tb-menu-divider {
+  flex: none;
+  height: var(--tb-border-width);
+  margin: var(--tb-space-1) calc(var(--tb-space-1) * -1);
+  background-color: var(--tb-border);
+  border: 0;
+}
+.tb-menu-heading {
+  padding: var(--tb-space-2) var(--tb-space-2) var(--tb-space-1);
+  font-size: var(--tb-text-sm);
+  font-weight: var(--tb-weight-medium);
+  line-height: var(--tb-leading-tight);
+  color: var(--tb-fg-muted);
+}
+/* A note under the heading, in normal case: what the section holds, such as "14 sources". */
+.tb-menu-heading-note {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--tb-text-sm);
+  font-weight: var(--tb-weight-regular);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* Popover: the floating container. It floats, so it is the one place with a shadow. */
+.tb-popover {
+  box-sizing: border-box;
+  z-index: var(--tb-z-dropdown);
+  max-height: min(360px, 60vh);
+  overflow-y: auto;
+  color: var(--tb-fg);
+  background-color: var(--tb-bg-raised);
+  border: var(--tb-border-width) solid var(--tb-border);
+  border-radius: var(--tb-radius-md);
+  box-shadow: var(--tb-shadow-md);
+}
+
+/* Dropdown: wrap the trigger and its popover in tb-dropdown. The popover opens below the
+   trigger, aligned left, or right with tb-popover--end. */
+.tb-dropdown {
+  position: relative;
+  display: inline-flex;
+  vertical-align: middle;
+}
+.tb-dropdown > .tb-popover {
+  position: absolute;
+  top: calc(100% + var(--tb-space-1));
+  left: 0;
+  min-width: max(100%, 180px);
+}
+.tb-dropdown > .tb-popover--end {
+  right: 0;
+  left: auto;
+}
+/* Opens above the trigger, for menus that sit at the bottom of the screen. */
+.tb-dropdown > .tb-popover--up {
+  top: auto;
+  bottom: calc(100% + var(--tb-space-1));
+}
+[data-tb-dropdown] + .tb-popover:not(.is-open) {
+  display: none;
+}
+
+/* ------------------------------------------------------------------------------------------
+   Tooltip. Inverted colours, so it reads as dark on the light theme and light on the dark.
+   ------------------------------------------------------------------------------------------ */
+
+.tb-tooltip {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: var(--tb-z-tooltip);
+  box-sizing: border-box;
+  max-width: 240px;
+  padding: var(--tb-space-1) var(--tb-space-2);
+  font-family: var(--tb-font);
+  font-size: var(--tb-text-sm);
+  font-weight: var(--tb-weight-regular);
+  line-height: var(--tb-leading-tight);
+  color: var(--tb-bg-surface);
+  overflow-wrap: break-word;
+  background-color: var(--tb-fg);
+  border-radius: var(--tb-radius-sm);
+  box-shadow: var(--tb-shadow-sm);
+  pointer-events: none;
+  animation: tb-tooltip-in var(--tb-duration) var(--tb-ease);
+}
+@keyframes tb-tooltip-in {
+  from { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tb-button,
+  .tb-input,
+  .tb-input-group,
+  .tb-select,
+  .tb-switch-track,
+  .tb-switch-track::after,
+  .tb-tag--interactive {
+    transition: none;
+  }
+  .tb-tooltip { animation: none; }
+  .tb-button.is-loading::after { animation-duration: 1.6s; }
+}

@@ -1,0 +1,34 @@
+/* Detail template, prefix de-. The grid only, plus the risk factors list. */
+
+.de-crumbs { flex: none; }
+.de-crumbs li:last-child { max-width: none; }
+.de-crumbs .tb-breadcrumb[aria-current] { max-width: none; font-size: var(--tb-text-lg); font-weight: var(--tb-weight-semibold); color: var(--tb-fg); }
+.de-main {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  align-items: start;
+  align-content: start;
+  padding-top: var(--tb-space-2);
+}
+.de-main > * { min-width: 0; }
+.de-figures { grid-column: 1 / -1; }
+.de-figures.tb-stat-strip { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.de-left { grid-column: span 8; display: flex; flex-direction: column; gap: var(--tb-space-3); min-width: 0; }
+.de-side { grid-column: span 4; display: flex; flex-direction: column; gap: var(--tb-space-3); }
+@media (max-width: 1180px) {
+  .de-figures.tb-stat-strip { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .de-left, .de-side { grid-column: 1 / -1; }
+}
+
+.de-risk-body { display: grid; grid-template-columns: minmax(160px, 1fr) minmax(0, 2fr); gap: var(--tb-space-4); align-items: start; }
+.de-risk-value { font-size: var(--tb-text-2xl); font-weight: var(--tb-weight-semibold); font-variant-numeric: tabular-nums; }
+.de-factors { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--tb-space-2); }
+.de-factor { display: grid; grid-template-columns: var(--tb-space-4) minmax(0, 1fr); gap: var(--tb-space-2); align-items: start; font-size: var(--tb-text-sm); }
+.de-factor > .tb-icon { margin-top: 2px; }
+.de-factor--up > .tb-icon { color: var(--tb-danger); }
+.de-factor--down > .tb-icon { color: var(--tb-success); }
+
+.de-timeline-body { max-height: 560px; overflow-y: auto; }
+.de-related-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: var(--tb-space-3); align-items: center; }
+.de-related-name { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-weight: var(--tb-weight-medium); }
+.de-note-input { height: auto; min-height: 96px; padding-top: var(--tb-space-2); resize: vertical; }

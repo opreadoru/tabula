@@ -1,0 +1,202 @@
+/* Tabula base. Reset, root defaults, typography, layout helpers and the product's own
+   semantic classes. Element rules use :where() so any class wins over them. */
+
+/* Reset. Kept minimal so it never fights the page it lands in. */
+:where(*, *::before, *::after) { box-sizing: border-box; }
+:where(body) { margin: 0; }
+:where(button, input, select, textarea) { font: inherit; color: inherit; }
+
+/* Root defaults */
+:where(body), .tb-root {
+  font-family: var(--tb-font);
+  font-size: var(--tb-text-md);
+  line-height: var(--tb-leading);
+  color: var(--tb-fg);
+  background: var(--tb-bg-canvas);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Typography */
+.tb-h1, .tb-h2, .tb-h3, .tb-h4 {
+  margin: 0;
+  font-weight: var(--tb-weight-semibold);
+  line-height: var(--tb-leading-tight);
+  color: var(--tb-fg);
+}
+.tb-h1 { font-size: var(--tb-text-2xl); }
+.tb-h2 { font-size: var(--tb-text-xl); }
+.tb-h3 { font-size: var(--tb-text-lg); }
+.tb-h4 { font-size: var(--tb-text-md); }
+
+.tb-text { margin: 0; font-size: var(--tb-text-md); line-height: var(--tb-leading); }
+.tb-text--sm { font-size: var(--tb-text-sm); }
+.tb-text--muted { color: var(--tb-fg-muted); }
+.tb-text--danger { color: var(--tb-danger); }
+
+.tb-caps {
+  font-size: var(--tb-text-sm);
+  font-weight: var(--tb-weight-medium);
+  color: var(--tb-fg-muted);
+}
+.tb-mono { font-family: var(--tb-font-mono); }
+.tb-num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* Links */
+:where(a), .tb-link { color: var(--tb-fg-link); text-decoration: none; }
+:where(a):hover, .tb-link:hover { text-decoration: underline; }
+
+/* Focus. One ring, everywhere, keyboard only. */
+:focus-visible {
+  outline: 2px solid var(--tb-border-focus);
+  outline-offset: 1px;
+}
+:focus:not(:focus-visible) { outline: none; }
+
+/* Layout helpers */
+.tb-stack { display: flex; flex-direction: column; gap: var(--tb-space-3); }
+.tb-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tb-space-2); }
+.tb-gap-0 { gap: 0; }
+.tb-gap-1 { gap: var(--tb-space-1); }
+.tb-gap-2 { gap: var(--tb-space-2); }
+.tb-gap-3 { gap: var(--tb-space-3); }
+.tb-gap-4 { gap: var(--tb-space-4); }
+.tb-gap-5 { gap: var(--tb-space-5); }
+.tb-gap-6 { gap: var(--tb-space-6); }
+.tb-gap-8 { gap: var(--tb-space-8); }
+.tb-gap-10 { gap: var(--tb-space-10); }
+.tb-gap-12 { gap: var(--tb-space-12); }
+
+.tb-divider {
+  flex: none;
+  align-self: stretch;
+  height: 0;
+  margin: 0;
+  border: 0;
+  border-top: var(--tb-border-width) solid var(--tb-border);
+}
+.tb-divider--vertical {
+  width: 0;
+  height: auto;
+  border-top: 0;
+  border-left: var(--tb-border-width) solid var(--tb-border);
+}
+
+.tb-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Icons. 16px on a 2px grid, stroke follows the text colour. */
+.tb-icon {
+  display: inline-block;
+  flex: none;
+  width: var(--tb-space-4);
+  height: var(--tb-space-4);
+  vertical-align: middle;
+  fill: none;
+  stroke: currentColor;
+}
+
+/* Probability. The band colour sits in a square marker, or in the bar when one is inside,
+   so the number itself keeps full text contrast. */
+.tb-prob {
+  --_prob-tone: var(--tb-fg-subtle);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tb-space-2);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--tb-weight-medium);
+  white-space: nowrap;
+}
+.tb-prob::before {
+  content: "";
+  flex: none;
+  width: var(--tb-space-2);
+  height: var(--tb-space-2);
+  background: var(--_prob-tone);
+}
+.tb-prob:has(.tb-prob-bar)::before { display: none; }
+.tb-prob--low { --_prob-tone: var(--tb-prob-low); }
+.tb-prob--mid { --_prob-tone: var(--tb-prob-mid); }
+.tb-prob--high { --_prob-tone: var(--tb-prob-high); }
+
+/* A bar from 0 to 100. Set the value inline: style="--value: 72.4". */
+.tb-prob-bar {
+  position: relative;
+  display: inline-block;
+  flex: none;
+  width: var(--tb-space-12);
+  height: var(--tb-space-1);
+  vertical-align: middle;
+  overflow: hidden;
+  background: var(--tb-border);
+}
+.tb-prob-bar::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: calc(var(--value, 0) * 1%);
+  max-width: 100%;
+  background: var(--_prob-tone, currentColor);
+}
+
+/* Origin of a value. AI-suggested is dashed until a person confirms it, then solid. */
+.tb-origin {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 var(--tb-space-1);
+  font-size: var(--tb-text-xs);
+  font-weight: var(--tb-weight-semibold);
+  line-height: var(--tb-leading);
+  white-space: nowrap;
+  vertical-align: middle;
+  border: var(--tb-border-width) solid transparent;
+  border-radius: var(--tb-radius-sm);
+}
+.tb-origin--ai {
+  color: var(--tb-ai);
+  background: var(--tb-ai-soft);
+  border-style: dashed;
+  border-color: var(--tb-ai);
+}
+.tb-origin--confirmed {
+  color: var(--tb-confirmed);
+  background: var(--tb-confirmed-soft);
+  border-color: var(--tb-border-strong);
+}
+
+/* Loading placeholder */
+.tb-skeleton {
+  display: block;
+  min-height: 1em;
+  border-radius: var(--tb-radius-sm);
+  color: transparent;
+  background-color: var(--tb-bg-sunken);
+  background-image: linear-gradient(90deg, transparent, var(--tb-bg-active), transparent);
+  background-size: 200% 100%;
+  background-repeat: no-repeat;
+  animation: tb-shimmer 1.2s linear infinite;
+  user-select: none;
+  pointer-events: none;
+}
+@keyframes tb-shimmer {
+  from { background-position: 150% 0; }
+  to { background-position: -50% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tb-skeleton { animation: none; }
+}
+
+/* States */
+.tb-is-disabled {
+  opacity: var(--tb-opacity-disabled);
+  pointer-events: none;
+  user-select: none;
+}
