@@ -6,6 +6,12 @@ Version 0.1, September 2026. Designed and built by [Alex Oprea](https://opreador
 
 See it live: [the documentation](https://opreadoru.github.io/tabula/) and [the template pages](https://opreadoru.github.io/tabula/pages/dashboard.html).
 
+
+
+https://github.com/user-attachments/assets/67ce81c7-9cdc-45e6-8b68-1590ae0ab2a7
+
+
+
 ## What is inside
 
 - **150 tokens** in `src/tokens.css`: 57 palette values behind 93 role tokens, six of them for chart series. Components use roles only, so the brand changes one file.
