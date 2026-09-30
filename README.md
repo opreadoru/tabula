@@ -4,6 +4,8 @@ An open design system for data-dense products: tables, trees, charts and reports
 
 Version 0.1, September 2026. Designed and built by [Alex Oprea](https://opreadoru.com). Free and open source under the MIT licence.
 
+See it live: [the documentation](https://opreadoru.github.io/tabula/) and [the template pages](https://opreadoru.github.io/tabula/pages/dashboard.html).
+
 ## What is inside
 
 - **150 tokens** in `src/tokens.css`: 57 palette values behind 93 role tokens, six of them for chart series. Components use roles only, so the brand changes one file.
