@@ -4,8 +4,6 @@ An open design system for data-dense products: tables, trees, charts and reports
 
 Version 0.1, September 2026. Designed and built by [Alex Oprea](https://opreadoru.com). Free and open source under the MIT licence.
 
-See it live: [the documentation](https://opreadoru.github.io/tabula/) and [the template pages](https://opreadoru.github.io/tabula/pages/dashboard.html).
-
 
 
 https://github.com/user-attachments/assets/67ce81c7-9cdc-45e6-8b68-1590ae0ab2a7
@@ -24,7 +22,7 @@ https://github.com/user-attachments/assets/67ce81c7-9cdc-45e6-8b68-1590ae0ab2a7
 
 ## Run the docs on your machine
 
-The docs and templates are [live on GitHub Pages](https://opreadoru.github.io/tabula/), so this is only for working on Tabula itself. It needs Node.js, and `npm install` only fetches Vite, the local server. Using Tabula in a project needs none of this (see "Use it" below).
+This runs the docs and templates locally. It needs Node.js, and `npm install` only fetches Vite, the local server. Using Tabula in a project needs none of this (see "Use it" below).
 
 ```
 npm install
