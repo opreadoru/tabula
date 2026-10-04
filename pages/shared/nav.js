@@ -55,7 +55,7 @@ export function mountPage(active, options = {}) {
   if (flags.includes('light')) document.documentElement.classList.remove('tb-dark')
   if (flags.includes('dark')) document.documentElement.classList.add('tb-dark')
   return mountShell({
-    brand: { name: 'Tabula', href: '../index.html' },
+    brand: { name: 'Tabula', href: './ask.html' },
     nav: NAV,
     menus: MENUS,
     account: USER,

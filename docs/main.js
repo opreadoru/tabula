@@ -46,7 +46,7 @@ function heroHtml() {
             <p class="doc-hero-by">Designed and built by <a href="https://opreadoru.com" target="_blank" rel="noopener">Alex Oprea</a>. Version 0.1, September 2026. Free and open source under the MIT licence.</p>
             <div class="doc-hero-actions">
               <a class="tb-button tb-button--primary" href="#overview">Get started</a>
-              <a class="tb-button" href="./pages/dashboard.html">See the templates</a>
+              <a class="tb-button" href="./pages/ask.html">See the templates</a>
             </div>
           </div>
         </div>

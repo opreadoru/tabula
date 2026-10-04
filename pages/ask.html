@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ask the data, Tabula templates</title>
+    <script>try { var s = localStorage, h = document.documentElement.classList; if (s.getItem('tb-theme') !== 'light') h.add('tb-dark'); if (s.getItem('tb-nav') === 'left') h.add('tb-nav-left'); if (s.getItem('tb-nav-collapsed') === '1') h.add('tb-nav-collapsed') } catch (e) {}</script>
+    <link rel="stylesheet" href="../src/tabula.css" />
+    <link rel="stylesheet" href="./shared/pages.css" />
+    <link rel="stylesheet" href="./ask.css" />
+  </head>
+  <body>
+    <header data-shell></header>
+
+    <div class="tb-page tb-page--fit ak-page" id="ak-page">
+      <main class="tb-page-main ak-main" id="ak-main">
+        <section class="ak-start" id="ak-start" aria-labelledby="ak-start-title">
+          <canvas class="ak-field" id="ak-field" aria-hidden="true"></canvas>
+          <div class="ak-start-inner">
+            <h1 class="ak-start-title" id="ak-start-title">Ask the data</h1>
+            <p class="ak-start-lead">Ask a question in your own words and get a dashboard back. A model chooses the widgets, and the code computes every figure from the data, so each number on screen can be checked.</p>
+
+            <form class="ak-composer ak-composer--start" data-composer>
+              <label class="tb-sr-only" for="ak-q-start">Your question</label>
+              <textarea class="tb-input ak-input" id="ak-q-start" rows="2" placeholder="For example, how did Europe do this quarter?" data-question></textarea>
+              <div class="ak-composer-bar">
+                <span class="tb-text tb-text--sm tb-text--muted">Enter sends, Shift and Enter adds a line.</span>
+                <span class="tb-spacer"></span>
+                <button class="tb-button tb-button--primary" type="submit" data-send>Ask</button>
+              </div>
+            </form>
+
+            <div class="ak-try">
+              <div class="ak-try-head">
+                <h2 class="ak-try-title">Try a question</h2>
+                <span class="tb-spacer"></span>
+                <span class="tb-text tb-text--sm tb-text--muted tb-num" id="ak-more-count"></span>
+                <button class="tb-button tb-button--minimal tb-button--sm" type="button" id="ak-more"><svg class="tb-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m18 14 4 4-4 4" /><path d="m18 2 4 4-4 4" /><path d="M2 18h1.973a4 4 0 0 0 3.3-1.7l5.454-7.6a4 4 0 0 1 3.3-1.7H22" /><path d="M2 6h1.972a4 4 0 0 1 3.6 2.2" /><path d="M22 18h-6.041a4 4 0 0 1-3.3-1.8l-.359-.45" /></svg>Other questions</button>
+              </div>
+              <div class="ak-suggest" id="ak-suggest"></div>
+            </div>
+            <div class="ak-try">
+              <h2 class="ak-try-title">See what happens when it cannot answer</h2>
+              <div class="ak-edges" id="ak-edges"></div>
+            </div>
+
+            <p class="ak-start-note">The suggested questions play back an answer recorded from the model, and the page runs the same checks on it as on a live one. Typed questions go to a model on this computer through Ollama. <a class="tb-link" href="../index.html">Read the Tabula documentation</a></p>
+          </div>
+        </section>
+
+        <aside class="tb-card ak-thread" id="ak-thread" aria-label="Conversation" hidden>
+          <div class="tb-card-header">
+            <h2 class="tb-card-title">Conversation</h2>
+            <div class="tb-card-actions">
+              <button class="tb-button tb-button--sm" type="button" id="ak-restart">Start over</button>
+            </div>
+          </div>
+          <div class="ak-log" id="ak-log" aria-live="polite"></div>
+          <div class="ak-follow" id="ak-follow"></div>
+          <form class="ak-composer" data-composer>
+            <label class="tb-sr-only" for="ak-q">Your question</label>
+            <textarea class="tb-input ak-input" id="ak-q" rows="2" placeholder="Ask a follow-up, such as only Europe" data-question></textarea>
+            <div class="ak-composer-bar">
+              <span class="tb-text tb-text--sm tb-text--muted" data-model-note></span>
+              <span class="tb-spacer"></span>
+              <button class="tb-button tb-button--primary tb-button--sm" type="submit" data-send>Ask</button>
+            </div>
+          </form>
+        </aside>
+
+        <section class="ak-board" id="ak-board" aria-labelledby="ak-title" hidden>
+          <div class="ak-board-head">
+            <div class="ak-board-text">
+              <h1 class="ak-board-title" id="ak-title"></h1>
+              <p class="ak-board-scope" id="ak-scope"></p>
+            </div>
+            <div class="tb-page-actions">
+              <button class="tb-button tb-button--sm" type="button" id="ak-undo" hidden>Undo the last change</button>
+            </div>
+          </div>
+          <div class="ak-grid" id="ak-grid"></div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="./ask.js"></script>
+  </body>
+</html>

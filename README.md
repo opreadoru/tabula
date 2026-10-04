@@ -17,7 +17,7 @@ https://github.com/user-attachments/assets/67ce81c7-9cdc-45e6-8b68-1590ae0ab2a7
 - **16 components** (8 controls, 8 surfaces) and **19 patterns**, including the app shell, edit mode, a timeline, a chart library and tree views.
 - **Behaviours** in plain JS: dropdowns, dialogs, tabs, tooltips, sortable tables, toasts, card collapse, card focus, expandable charts, a layout editor and widget zones, the app shell, eight chart builders and the tree views.
 - **Formatters** in `src/format.js` for every number, amount, percentage, date and file size.
-- **Template pages** in `pages/`: a dashboard, analytics, a data table, a record in detail, a report and a layout editor, on one seeded set of generic business data.
+- **Template pages** in `pages/`: a home page that turns a question into a dashboard, a dashboard, analytics, a data table, a record in detail, a report and a layout editor, on one seeded set of generic business data.
 - **A documentation site** with a live example, the exact markup, rules and do and don't for every component, plus the foundations: colour, type, spacing, shape, formatting, states and icons.
 
 ## Run the docs on your machine
@@ -29,7 +29,9 @@ npm install
 npx vite --port 5190
 ```
 
-The documentation opens at `http://localhost:5190/`, and the templates at `http://localhost:5190/pages/dashboard.html`.
+The documentation opens at `http://localhost:5190/`, and the templates at `http://localhost:5190/pages/ask.html`.
+
+The templates open on Ask the data, where a question becomes a dashboard. Its suggested questions play answers recorded from a model and need nothing more. Typed questions need a model on your machine: install [Ollama](https://ollama.com), then run `ollama pull gemma4:12b` once. The page reaches it through the local server, so open it with `npx vite`. How the model and the code share the work is in `pages/README.md`.
 
 ## Use it
 
