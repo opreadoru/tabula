@@ -1,6 +1,6 @@
 // Ask, the rules between the model and the page. The model never writes a figure or a line of
 // markup: it answers with a spec that names a reply, a scope and up to six widgets, every value
-// taken from the lists below. check() then reads that spec as untrusted input. It drops what the
+// taken from the lists below. check() then goes through every part of it. It drops what the
 // data cannot show, fixes what contradicts itself, and says what it changed in plain words. The
 // page draws only what check() returns, and every figure on it comes from shared/data.js.
 //
@@ -8,7 +8,7 @@
 //   const answer = check(modelJson, current)                     // { reply, title, scope, widgets, notes, ... }
 //   resolveScope(answer.scope)                                   // day numbers, names, the comparison window
 //
-// No DOM here, so the hosted version's function can build the same prompt and run the same checks.
+// No DOM here, so it runs in a browser or in Node.
 import { fmtDate, fmtInt } from '../../src/format.js'
 import { MONTHS, LAST, START, TODAY, dayOf, isoOf, REGIONS, REGION_BY_ID, COUNTRIES, COUNTRY_BY_CODE, CATEGORIES, PRODUCTS, PRODUCT_BY_ID } from './data.js'
 
@@ -140,7 +140,7 @@ const widgetNoun = w => {
 }
 export const widgetKey = w => [w.kind, w.metric || '', (w.metrics || []).join('+'), w.by || '', w.then || '', w.x || '', w.y || '', w.sort || ''].join(':')
 
-/* The prompt. Built here so the local page and the hosted function send the same words. */
+/* The prompt. */
 
 const list = (items, fn) => items.map(fn).join(', ')
 const SYSTEM = `You turn a question about a company's sales data into a dashboard spec. The code that receives your spec computes every figure and draws every chart. You never write a number about the data and never write HTML.

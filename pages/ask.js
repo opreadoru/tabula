@@ -8,8 +8,7 @@
 //
 // The start page offers 25 suggested questions, six at a time, over a moving field (ask-field.js).
 // Suggested questions play a recorded answer (ask-recorded.js) through the same checks. Typed
-// questions go to a model: on this computer, Ollama through the dev server's /ollama proxy, or the
-// hosted copy's own model through window.tabulaAsk (see callModel).
+// questions go to a model on this computer: Ollama, through the dev server's /ollama proxy.
 //
 // Screenshot flags on the hash, joined with +: #q1, #q2, #q3 play a suggested question, #vague,
 // #cannot and #split the edge cases, #s1 to #s25 any suggested question, #follow plays the first question and its first follow-up,
@@ -556,15 +555,13 @@ const state = {
 }
 const norm = s => s.toLowerCase().replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ').trim()
 const chainKey = () => state.chain.map(norm).join(' > ')
-// A hosted copy sets window.tabulaAsk = { name, call(context, { signal }), recorded }. call gets
-// { question, current, history } and builds the prompt on its own side, and recorded replaces the
-// answers recorded here with ones from its own model.
+// Another model can stand in through window.tabulaAsk = { name, call(context, { signal }), recorded }.
 const host = window.tabulaAsk || null
 const MODEL = host?.name || 'gemma4:12b'
 const ANSWERS = host?.recorded || RECORDED
 const recordedFor = q => ANSWERS.find(x => norm(x.q) === norm(q) && (x.after || '') === chainKey())
 
-// The model, behind one function: the hosted version's when there is one, else Ollama here.
+// The model, behind one function: the one passed in when there is one, else Ollama here.
 async function callModel(context, signal) {
   if (host) return host.call(context, { signal })
   const prompt = buildPrompt(context.question, context)
