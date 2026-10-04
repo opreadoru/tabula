@@ -4,6 +4,7 @@ An open design system for data-dense products: tables, trees, charts and reports
 
 Version 0.1, September 2026. Designed and built by [Alex Oprea](https://opreadoru.com). Free and open source under the MIT licence.
 
+See it live: [tabula-five-gamma.vercel.app](https://tabula-five-gamma.vercel.app), with the documentation and every template page. On the live Ask page, typed questions go to Gemini 2.5 Flash-Lite with a daily limit, and the suggested questions play back recorded answers. The version in this repo runs entirely on your own computer.
 
 
 https://github.com/user-attachments/assets/67ce81c7-9cdc-45e6-8b68-1590ae0ab2a7

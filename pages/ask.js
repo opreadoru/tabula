@@ -8,8 +8,8 @@
 //
 // The start page offers 25 suggested questions, six at a time, over a moving field (ask-field.js).
 // Suggested questions play a recorded answer (ask-recorded.js) through the same checks. Typed
-// questions go to a model: on this computer, Ollama through the dev server's /ollama proxy. A
-// hosted copy sets window.tabulaAsk = { name, call(prompt, { signal }) } and the page uses that.
+// questions go to a model: on this computer, Ollama through the dev server's /ollama proxy, or the
+// hosted copy's own model through window.tabulaAsk (see callModel).
 //
 // Screenshot flags on the hash, joined with +: #q1, #q2, #q3 play a suggested question, #vague,
 // #cannot and #split the edge cases, #s1 to #s25 any suggested question, #follow plays the first question and its first follow-up,
@@ -556,13 +556,18 @@ const state = {
 }
 const norm = s => s.toLowerCase().replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ').trim()
 const chainKey = () => state.chain.map(norm).join(' > ')
-const recordedFor = q => RECORDED.find(x => norm(x.q) === norm(q) && (x.after || '') === chainKey())
+// A hosted copy sets window.tabulaAsk = { name, call(context, { signal }), recorded }. call gets
+// { question, current, history } and builds the prompt on its own side, and recorded replaces the
+// answers recorded here with ones from its own model.
 const host = window.tabulaAsk || null
 const MODEL = host?.name || 'gemma4:12b'
+const ANSWERS = host?.recorded || RECORDED
+const recordedFor = q => ANSWERS.find(x => norm(x.q) === norm(q) && (x.after || '') === chainKey())
 
 // The model, behind one function: the hosted version's when there is one, else Ollama here.
-async function callModel(prompt, signal) {
-  if (host) return host.call(prompt, { signal })
+async function callModel(context, signal) {
+  if (host) return host.call(context, { signal })
+  const prompt = buildPrompt(context.question, context)
   let res
   try {
     res = await fetch('/ollama/api/chat', {
@@ -604,7 +609,7 @@ async function ask(question) {
       raw = rec.raw
       turn.model = rec.model
     } else {
-      raw = await callModel(buildPrompt(question, { current: state.board, history: state.turns.slice(0, -1).filter(t => t.question).map(t => t.question) }), controller.signal)
+      raw = await callModel({ question, current: state.board, history: state.turns.slice(0, -1).filter(t => t.question).map(t => t.question) }, controller.signal)
       turn.model = MODEL
       turn.ms = performance.now() - t0
     }
@@ -689,7 +694,7 @@ function renderLog() {
   const log = $('#ak-log')
   log.scrollTop = log.scrollHeight
   // Follow-ups recorded for the dashboard on screen.
-  const next = state.board ? RECORDED.filter(x => x.after && x.after === chainKey() && x.chip) : []
+  const next = state.board ? ANSWERS.filter(x => x.after && x.after === chainKey() && x.chip) : []
   $('#ak-follow').innerHTML = next.length && !state.controller
     ? `<span class="ak-options-label">Try a follow-up</span>${next.map(x => `<button class="tb-button tb-button--sm ak-option" type="button" data-ask="${esc(x.q)}">${esc(x.q)}</button>`).join('')}`
     : ''
@@ -816,7 +821,7 @@ const flagQuestion = { q1: SUGGESTED[0].q, q2: SUGGESTED[1].q, q3: SUGGESTED[2].
   if (typed) await ask(decodeURIComponent(typed.slice(4)))
   else if (FLAGS.has('follow')) {
     await ask(SUGGESTED[0].q)
-    const next = RECORDED.find(x => x.after === chainKey() && x.chip)
+    const next = ANSWERS.find(x => x.after === chainKey() && x.chip)
     if (next) await ask(next.q)
   } else if (first) await ask(flagQuestion[first])
   if (FLAGS.has('query')) grid.querySelector('[data-query]')?.click()
