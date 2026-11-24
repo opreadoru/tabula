@@ -1,0 +1,253 @@
+/* Tabula design tokens.
+   Every visual decision lives here as a custom property named by role, never by value, so
+   the brand exploration later is a swap of this file and nothing else. */
+
+:root {
+  color-scheme: light;
+
+  /* Palette. Raw values, referenced only from the role tokens below. */
+  --tb-p-neutral-0: #ffffff;
+  --tb-p-neutral-50: #f7f8f9;
+  --tb-p-neutral-100: #eef0f2;
+  --tb-p-neutral-200: #dfe2e6;
+  --tb-p-neutral-300: #c8cdd3;
+  --tb-p-neutral-400: #9aa3ad;
+  --tb-p-neutral-500: #6b7683;
+  --tb-p-neutral-600: #4d5966;
+  --tb-p-neutral-700: #35404c;
+  --tb-p-neutral-800: #222a33;
+  --tb-p-neutral-900: #141a20;
+  --tb-p-neutral-1000: #0b0f13;
+
+  /* Brand scales, from supacolors, in OKLCH so wide-gamut screens get the full colour.
+     Steps 500 and 600 fail AA with white text on all three: filled controls use 700. */
+  --tb-p-blue-50: oklch(97.4% 0.012 244.514);
+  --tb-p-blue-100: oklch(94.3% 0.026 245.026);
+  --tb-p-blue-200: oklch(89.3% 0.053 240.874);
+  --tb-p-blue-300: oklch(82.0% 0.099 239.604);
+  --tb-p-blue-400: oklch(73.0% 0.148 242.132);
+  --tb-p-blue-500: oklch(68.4% 0.163 247.004);
+  --tb-p-blue-600: oklch(57.1% 0.176 251.022);
+  --tb-p-blue-700: oklch(49.5% 0.162 252.087);
+  --tb-p-blue-800: oklch(43.5% 0.133 251.405);
+  --tb-p-blue-900: oklch(38.6% 0.102 251.411);
+  --tb-p-blue-950: oklch(28.9% 0.069 253.744);
+
+  --tb-p-orange-50: oklch(98.0% 0.012 73.98);
+  --tb-p-orange-100: oklch(95.4% 0.029 75.46);
+  --tb-p-orange-200: oklch(90.1% 0.057 70.993);
+  --tb-p-orange-300: oklch(83.7% 0.097 66.586);
+  --tb-p-orange-400: oklch(75.0% 0.138 56.23);
+  --tb-p-orange-500: oklch(68.4% 0.163 47.9);
+  --tb-p-orange-600: oklch(64.6% 0.167 41.412);
+  --tb-p-orange-700: oklch(55.3% 0.147 38.698);
+  --tb-p-orange-800: oklch(47.0% 0.118 37.6);
+  --tb-p-orange-900: oklch(40.8% 0.093 38.468);
+  --tb-p-orange-950: oklch(26.6% 0.06 36.555);
+
+  --tb-p-red-50: oklch(97.2% 0.012 24.206);
+  --tb-p-red-100: oklch(93.8% 0.03 24.639);
+  --tb-p-red-200: oklch(88.6% 0.059 24.829);
+  --tb-p-red-300: oklch(81.0% 0.107 25.592);
+  --tb-p-red-400: oklch(70.8% 0.177 27.146);
+  --tb-p-red-500: oklch(64.3% 0.219 29.3);
+  --tb-p-red-600: oklch(61.0% 0.223 29.3);
+  --tb-p-red-700: oklch(50.9% 0.197 30.531);
+  --tb-p-red-800: oklch(44.6% 0.163 29.872);
+  --tb-p-red-900: oklch(39.7% 0.13 28.867);
+  --tb-p-red-950: oklch(25.9% 0.085 28.999);
+
+  /* Warning is an amber pushed towards yellow, so it stays apart from the brand orange. */
+  --tb-p-amber-100: oklch(96.2% 0.045 88);
+  --tb-p-amber-400: oklch(83% 0.15 85);
+  --tb-p-amber-500: oklch(75% 0.155 78);
+  --tb-p-amber-600: oklch(64% 0.14 72);
+  --tb-p-success-100: #e2f3ea;
+  --tb-p-success-400: #4fb37e;
+  --tb-p-success-500: #218a52;
+  --tb-p-success-600: #1a7043;
+
+  /* Two scales for chart series only, so six series never have to borrow a status colour. */
+  --tb-p-teal-400: oklch(78% 0.11 188);
+  --tb-p-teal-600: oklch(58% 0.1 192);
+  --tb-p-violet-400: oklch(72% 0.13 300);
+  --tb-p-violet-600: oklch(54% 0.16 300);
+
+  /* Roles: surfaces and text */
+  --tb-bg-canvas: var(--tb-p-neutral-50);
+  --tb-bg-surface: var(--tb-p-neutral-0);
+  --tb-bg-raised: var(--tb-p-neutral-0);
+  --tb-bg-sunken: var(--tb-p-neutral-100);
+  --tb-bg-hover: rgba(20, 26, 32, 0.05);
+  --tb-bg-active: rgba(20, 26, 32, 0.09);
+  --tb-bg-selected: var(--tb-p-blue-100);
+  --tb-bg-overlay: rgba(11, 15, 19, 0.55);
+
+  --tb-fg: var(--tb-p-neutral-900);
+  --tb-fg-muted: var(--tb-p-neutral-500);
+  --tb-fg-subtle: var(--tb-p-neutral-400);
+  --tb-fg-on-accent: var(--tb-p-neutral-0);
+  --tb-fg-link: var(--tb-p-blue-700);
+
+  --tb-border: var(--tb-p-neutral-200);
+  --tb-border-strong: var(--tb-p-neutral-300);
+  --tb-border-focus: var(--tb-p-blue-500);
+
+  --tb-accent: var(--tb-p-blue-700);
+  --tb-accent-hover: var(--tb-p-blue-800);
+  --tb-accent-active: var(--tb-p-blue-900);
+  --tb-accent-soft: var(--tb-p-blue-100);
+
+  --tb-danger: var(--tb-p-red-700);
+  --tb-danger-hover: var(--tb-p-red-800);
+  --tb-danger-soft: var(--tb-p-red-100);
+  --tb-warning: var(--tb-p-amber-500);
+  --tb-warning-hover: var(--tb-p-amber-600);
+  --tb-warning-soft: var(--tb-p-amber-100);
+  --tb-success: var(--tb-p-success-500);
+  --tb-success-hover: var(--tb-p-success-600);
+  --tb-success-soft: var(--tb-p-success-100);
+
+  /* Roles: the product's own semantics. AI-suggested versus human-confirmed is a first-class
+     distinction in analyst tools, so it gets tokens rather than a reuse of warning or accent. */
+  --tb-ai: #6b4fbb;
+  --tb-ai-soft: #ece7f8;
+  --tb-confirmed: var(--tb-p-neutral-800);
+  --tb-confirmed-soft: var(--tb-p-neutral-100);
+
+  /* Probability scale, three bands. Thresholds are a product rule, see formatting. */
+  --tb-prob-low: var(--tb-p-success-500);
+  --tb-prob-mid: var(--tb-p-amber-500);
+  --tb-prob-high: var(--tb-p-red-500);
+
+  /* Chart series, for categories that carry no meaning of their own (regions, products,
+     segments), in the order a chart should use them. A series that means something (at risk,
+     a status) uses that meaning's token instead. */
+  --tb-series-1: var(--tb-p-blue-600);
+  --tb-series-2: var(--tb-p-orange-500);
+  --tb-series-3: var(--tb-p-teal-600);
+  --tb-series-4: var(--tb-p-violet-600);
+  --tb-series-5: var(--tb-p-amber-500);
+  --tb-series-6: var(--tb-p-neutral-400);
+
+  /* Brand. The stack: three tablets in the brand colours, and a tile of stacks for the pattern
+     behind card headers. Decorative only, never used to carry a status, so it borrows no meaning
+     from the semantic colours. Values are the 500 steps of the brand scales. */
+  --tb-brand-1: var(--tb-p-blue-500);
+  --tb-brand-2: var(--tb-p-red-500);
+  --tb-brand-3: var(--tb-p-orange-500);
+  --tb-brand-4: var(--tb-p-neutral-900);
+  --tb-brand-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Crect x='2' y='4' width='14' height='4' rx='1' fill='%232ca0f8'/%3E%3Crect x='5' y='10' width='14' height='4' rx='1' fill='%23e8752f'/%3E%3Crect x='8' y='16' width='14' height='4' rx='1' fill='%23f64132'/%3E%3Crect x='22' y='24' width='14' height='4' rx='1' fill='%23141a20'/%3E%3Crect x='25' y='30' width='14' height='4' rx='1' fill='%232ca0f8'/%3E%3Crect x='28' y='36' width='12' height='4' rx='1' fill='%23e8752f'/%3E%3C/svg%3E");
+  --tb-brand-pattern-opacity: 0.07;
+
+  /* Type */
+  --tb-font: "Instrument Sans", -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --tb-font-brand: var(--tb-font);
+  --tb-font-mono: ui-monospace, "Cascadia Mono", Consolas, "Liberation Mono", monospace;
+  --tb-text-xs: 11px;
+  --tb-text-sm: 12px;
+  --tb-text-md: 13px;
+  --tb-text-lg: 15px;
+  --tb-text-xl: 18px;
+  --tb-text-2xl: 24px;
+  --tb-text-3xl: 32px;
+  --tb-leading-tight: 1.25;
+  --tb-leading: 1.45;
+  --tb-weight-regular: 400;
+  --tb-weight-medium: 500;
+  --tb-weight-semibold: 600;
+
+  /* Spacing, 4px base */
+  --tb-space-1: 4px;
+  --tb-space-2: 8px;
+  --tb-space-3: 12px;
+  --tb-space-4: 16px;
+  --tb-space-5: 20px;
+  --tb-space-6: 24px;
+  --tb-space-8: 32px;
+  --tb-space-10: 40px;
+  --tb-space-12: 48px;
+
+  /* Shape. Sharp and flat by decision: analyst tooling, not consumer SaaS. */
+  --tb-radius-sm: 4px;
+  --tb-radius-md: 5px;
+  --tb-radius-lg: 6px;
+  --tb-radius-full: 999px;
+  --tb-border-width: 1px;
+
+  /* Elevation, kept minimal. Surfaces separate by border first, shadow only when floating. */
+  --tb-shadow-none: none;
+  --tb-shadow-sm: 0 1px 2px rgba(11, 15, 19, 0.12);
+  --tb-shadow-md: 0 2px 8px rgba(11, 15, 19, 0.16);
+  --tb-shadow-lg: 0 8px 24px rgba(11, 15, 19, 0.2);
+
+  /* Control sizes */
+  --tb-control-sm: 24px;
+  --tb-control-md: 30px;
+  --tb-control-lg: 40px;
+
+  /* Opacity */
+  --tb-opacity-disabled: 0.45;
+
+  /* Motion */
+  --tb-duration-fast: 80ms;
+  --tb-duration: 150ms;
+  --tb-duration-slow: 240ms;
+  --tb-ease: cubic-bezier(0.2, 0, 0, 1);
+
+  /* Layers */
+  --tb-z-dropdown: 100;
+  --tb-z-overlay: 200;
+  --tb-z-toast: 300;
+  --tb-z-tooltip: 400;
+}
+
+.tb-dark {
+  color-scheme: dark;
+
+  --tb-bg-canvas: var(--tb-p-neutral-1000);
+  --tb-bg-surface: var(--tb-p-neutral-900);
+  --tb-bg-raised: var(--tb-p-neutral-800);
+  --tb-bg-sunken: var(--tb-p-neutral-1000);
+  --tb-bg-hover: rgba(255, 255, 255, 0.06);
+  --tb-bg-active: rgba(255, 255, 255, 0.1);
+  --tb-bg-selected: oklch(68.4% 0.163 247 / 0.22);
+  --tb-bg-overlay: rgba(0, 0, 0, 0.65);
+
+  --tb-fg: var(--tb-p-neutral-100);
+  --tb-fg-muted: var(--tb-p-neutral-400);
+  --tb-fg-subtle: var(--tb-p-neutral-500);
+  --tb-fg-link: var(--tb-p-blue-300);
+
+  --tb-border: var(--tb-p-neutral-700);
+  --tb-border-strong: var(--tb-p-neutral-600);
+
+  --tb-accent-soft: oklch(68.4% 0.163 247 / 0.2);
+  --tb-danger-soft: oklch(64.3% 0.219 29.3 / 0.2);
+  --tb-warning-soft: oklch(75% 0.155 78 / 0.2);
+  --tb-success-soft: rgba(33, 138, 82, 0.2);
+  --tb-ai: #9d86e0;
+  --tb-ai-soft: rgba(107, 79, 187, 0.24);
+  --tb-danger: var(--tb-p-red-400);
+  --tb-warning: var(--tb-p-amber-400);
+  --tb-success: var(--tb-p-success-400);
+  --tb-prob-low: var(--tb-p-success-400);
+  --tb-prob-mid: var(--tb-p-amber-400);
+  --tb-prob-high: var(--tb-p-red-400);
+  --tb-series-1: var(--tb-p-blue-400);
+  --tb-series-2: var(--tb-p-orange-400);
+  --tb-series-3: var(--tb-p-teal-400);
+  --tb-series-4: var(--tb-p-violet-400);
+  --tb-series-5: var(--tb-p-amber-400);
+  --tb-series-6: var(--tb-p-neutral-500);
+  --tb-confirmed: var(--tb-p-neutral-100);
+  --tb-confirmed-soft: var(--tb-p-neutral-800);
+
+  --tb-brand-4: var(--tb-p-neutral-100);
+  --tb-brand-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Crect x='2' y='4' width='14' height='4' rx='1' fill='%232ca0f8'/%3E%3Crect x='5' y='10' width='14' height='4' rx='1' fill='%23e8752f'/%3E%3Crect x='8' y='16' width='14' height='4' rx='1' fill='%23f64132'/%3E%3Crect x='22' y='24' width='14' height='4' rx='1' fill='%23eef0f2'/%3E%3Crect x='25' y='30' width='14' height='4' rx='1' fill='%232ca0f8'/%3E%3Crect x='28' y='36' width='12' height='4' rx='1' fill='%23e8752f'/%3E%3C/svg%3E");
+  --tb-brand-pattern-opacity: 0.1;
+
+  --tb-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --tb-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.5);
+  --tb-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6);
+}

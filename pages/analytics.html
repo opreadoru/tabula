@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Analytics, Tabula templates</title>
+    <script>try { var s = localStorage, h = document.documentElement.classList; if (s.getItem('tb-theme') !== 'light') h.add('tb-dark'); if (s.getItem('tb-nav') === 'left') h.add('tb-nav-left'); if (s.getItem('tb-nav-collapsed') === '1') h.add('tb-nav-collapsed') } catch (e) {}</script>
+    <link rel="stylesheet" href="../src/tabula.css" />
+    <link rel="stylesheet" href="./shared/pages.css" />
+    <link rel="stylesheet" href="./analytics.css" />
+  </head>
+  <body>
+    <header data-shell></header>
+
+    <div class="tb-page">
+      <div class="tb-page-toolbar">
+        <h1 class="tb-page-title">Analytics</h1>
+        <div class="tb-page-context">
+          <select class="tb-select tb-select--sm" id="an-region" aria-label="Region"></select>
+          <span class="tb-text tb-text--sm tb-text--muted tb-num pg-nowrap" id="an-range"></span>
+        </div>
+        <div class="tb-chip-group" id="an-chips" aria-live="polite" aria-label="Filters"></div>
+        <span class="tb-spacer"></span>
+        <div class="tb-page-actions">
+          <button class="tb-button" type="button" id="an-save">Save view</button>
+        </div>
+      </div>
+
+      <main class="tb-page-main an-main" id="an-main">
+        <h2 class="tb-caps an-group" id="trends">Trends</h2>
+
+        <section class="tb-card an-area" aria-labelledby="an-area-title">
+          <div class="tb-card-header">
+            <h3 class="tb-card-title" id="an-area-title">Revenue by region, per week</h3>
+            <div class="tb-card-actions">
+              <span id="an-area-legend"></span>
+              <div class="tb-button-group" role="group" aria-label="Scale">
+                <button class="tb-button tb-button--sm" type="button" data-area-mode="value" aria-pressed="true">Value</button>
+                <button class="tb-button tb-button--sm" type="button" data-area-mode="share" aria-pressed="false">Share</button>
+              </div>
+              <span data-expand="Revenue by region, per week"></span>
+            </div>
+          </div>
+          <div class="tb-card-body tb-chart-body" id="an-area-body"></div>
+        </section>
+
+        <section class="tb-card an-funnel" aria-labelledby="an-funnel-title">
+          <div class="tb-card-header">
+            <h3 class="tb-card-title" id="an-funnel-title">From visit to renewal</h3>
+            <div class="tb-card-actions"><span data-expand="From visit to renewal"></span></div>
+          </div>
+          <div class="tb-card-body tb-chart-body" id="an-funnel-body"></div>
+          <div class="tb-card-footer pg-foot" id="an-funnel-foot"></div>
+        </section>
+
+        <section class="tb-card an-bars" aria-labelledby="an-bars-title">
+          <div class="tb-card-header">
+            <h3 class="tb-card-title" id="an-bars-title">Revenue by category, per month</h3>
+            <div class="tb-card-actions">
+              <span id="an-bars-legend"></span>
+              <div class="tb-button-group" role="group" aria-label="Scale">
+                <button class="tb-button tb-button--sm" type="button" data-bars-mode="value" aria-pressed="true">Value</button>
+                <button class="tb-button tb-button--sm" type="button" data-bars-mode="share" aria-pressed="false">Share</button>
+              </div>
+              <span data-expand="Revenue by category, per month"></span>
+            </div>
+          </div>
+          <div class="tb-card-body tb-chart-body" id="an-bars-body"></div>
+        </section>
+
+        <section class="tb-card an-heat" aria-labelledby="an-heat-title">
+          <div class="tb-card-header">
+            <h3 class="tb-card-title" id="an-heat-title">Orders by weekday and hour</h3>
+            <div class="tb-card-actions">
+              <div class="tb-button-group" role="group" aria-label="Hour blocks">
+                <button class="tb-button tb-button--sm" type="button" data-heat-unit="1" aria-pressed="true">1 h</button>
+                <button class="tb-button tb-button--sm" type="button" data-heat-unit="3" aria-pressed="false">3 h</button>
+              </div>
+              <span data-expand="Orders by weekday and hour"></span>
+            </div>
+          </div>
+          <div class="tb-card-body tb-chart-body" id="an-heat-body"></div>
+        </section>
+
+        <h2 class="tb-caps an-group" id="customers">Customers</h2>
+
+        <section class="tb-card an-scatter" aria-labelledby="an-scatter-title">
+          <div class="tb-card-header">
+            <h3 class="tb-card-title" id="an-scatter-title">Orders against average order, per account</h3>
+            <div class="tb-card-actions">
+              <span class="tb-text tb-text--sm tb-text--muted">Drag to select a range</span>
+              <button class="tb-button tb-button--minimal tb-button--sm" type="button" id="an-brush-clear" hidden>Clear range</button>
+              <span data-expand="Orders against average order, per account"></span>
+            </div>
+          </div>
+          <div class="tb-card-body tb-chart-body" id="an-scatter-body"></div>
+          <div class="tb-card-footer pg-foot an-point" id="an-point"></div>
+        </section>
+
+        <section class="tb-card an-hist" aria-labelledby="an-hist-title">
+          <div class="tb-card-header">
+            <h3 class="tb-card-title" id="an-hist-title">Accounts by yearly revenue</h3>
+            <div class="tb-card-actions">
+              <span id="an-hist-legend"></span>
+              <span data-expand="Accounts by yearly revenue"></span>
+            </div>
+          </div>
+          <div class="tb-card-body tb-chart-body" id="an-hist-body"></div>
+          <div class="tb-card-footer pg-foot" id="an-hist-foot"></div>
+        </section>
+
+        <h2 class="tb-caps an-group" id="hierarchy">Revenue hierarchy</h2>
+
+        <section class="tb-card an-tree" id="an-tree"></section>
+
+        <section class="tb-card an-inspector" aria-labelledby="an-inspector-title">
+          <div class="tb-card-header"><h3 class="tb-card-title" id="an-inspector-title">Selection</h3></div>
+          <div class="tb-card-body an-inspector-body" id="an-inspector-body"></div>
+          <div class="tb-card-footer" id="an-inspector-foot" hidden></div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="./analytics.js"></script>
+  </body>
+</html>

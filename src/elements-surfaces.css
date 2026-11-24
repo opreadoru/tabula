@@ -1,0 +1,732 @@
+/* Tabula surfaces. Card, table, tabs, dialog, toast, callout, empty state, progress.
+   Borders separate surfaces. Shadows appear only on things that float: dialog and toast. */
+
+/* ------------------------------------------------------------------------------------------
+   Card
+   ------------------------------------------------------------------------------------------ */
+
+.tb-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  color: var(--tb-fg);
+  background: var(--tb-bg-surface);
+  border: var(--tb-border-width) solid var(--tb-border);
+  border-radius: var(--tb-radius-md);
+}
+
+.tb-card-header {
+  display: flex;
+  align-items: center;
+  gap: var(--tb-space-2);
+  min-height: var(--tb-control-lg);
+  padding: var(--tb-space-1) var(--tb-space-2) var(--tb-space-1) var(--tb-space-4);
+  border-bottom: var(--tb-border-width) solid var(--tb-border);
+  position: relative;
+}
+
+/* The brand's stacks sit behind the left edge of every card header, faint and fading
+   out to the right. Children are lifted above them. Add tb-card-header--plain to switch off. */
+.tb-card-header::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: min(30%, 160px);
+  background-image: var(--tb-brand-pattern);
+  background-size: 80px 80px;
+  background-position: left center;
+  opacity: var(--tb-brand-pattern-opacity);
+  -webkit-mask-image: linear-gradient(to left, transparent, #000 60%);
+  mask-image: linear-gradient(to left, transparent, #000 60%);
+  pointer-events: none;
+}
+.tb-card-header > * { position: relative; }
+.tb-card-header--plain::before { content: none; }
+
+/* Titles are scoped under their parent so page heading styles cannot move them. */
+.tb-card .tb-card-title {
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  font-size: var(--tb-text-md);
+  font-weight: var(--tb-weight-semibold);
+  line-height: var(--tb-leading-tight);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.tb-card-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--tb-space-1);
+  margin-left: auto;
+  flex: none;
+}
+
+.tb-card-body {
+  flex: 1;
+  min-width: 0;
+  padding: var(--tb-space-4);
+}
+
+/* A body with no padding, for a table or a list that runs edge to edge. */
+.tb-card-body--flush { padding: 0; }
+
+.tb-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--tb-space-2);
+  padding: var(--tb-space-2) var(--tb-space-4);
+  border-top: var(--tb-border-width) solid var(--tb-border);
+}
+
+/* Collapse: the chevron last in the header folds the card down to its header. The other header
+   actions hide while it is folded, and any fixed height the page gave the card lets go. */
+.tb-card-collapse .tb-icon { transition: transform var(--tb-duration-fast) var(--tb-ease); }
+.tb-card.is-collapsed .tb-card-collapse .tb-icon { transform: rotate(180deg); }
+.tb-card.is-collapsed {
+  height: fit-content; /* not auto, so a grid row that stretches its cards leaves this one short */
+  min-height: 0;
+  max-height: none;
+  flex: none;
+}
+.tb-card.is-collapsed > :not(.tb-card-header),
+.tb-card.is-collapsed .tb-card-actions > :not(.tb-card-collapse) { display: none; }
+.tb-card.is-collapsed > .tb-card-header { border-bottom: 0; }
+
+.tb-card--interactive {
+  cursor: pointer;
+  text-decoration: none;
+  transition: border-color var(--tb-duration-fast) var(--tb-ease), background-color var(--tb-duration-fast) var(--tb-ease);
+}
+.tb-card--interactive:hover {
+  border-color: var(--tb-border-strong);
+  background: linear-gradient(var(--tb-bg-hover), var(--tb-bg-hover)), var(--tb-bg-surface);
+  text-decoration: none;
+}
+.tb-card--interactive:active {
+  background: linear-gradient(var(--tb-bg-active), var(--tb-bg-active)), var(--tb-bg-surface);
+}
+.tb-card--interactive:focus-visible {
+  outline: 2px solid var(--tb-border-focus);
+  outline-offset: 1px;
+}
+
+.tb-card--selected,
+.tb-card--selected:hover {
+  border-color: var(--tb-accent);
+  box-shadow: inset 0 0 0 var(--tb-border-width) var(--tb-accent);
+}
+
+/* Card focus: a long press on a card header brings that card forward. The script sets
+   tb-focus-on on <html>, is-focused on the card and tb-focus-dim on everything around it, which it
+   also makes inert. The rest of the page blurs and dims; the card lifts with a large shadow. */
+.tb-focus-dim {
+  filter: blur(3px) saturate(0.6) brightness(0.55);
+  transition: filter var(--tb-duration-slow) var(--tb-ease);
+}
+.tb-card.is-focused {
+  z-index: 1;
+  border-color: var(--tb-border-strong);
+  box-shadow: var(--tb-shadow-lg);
+  transition: box-shadow var(--tb-duration-slow) var(--tb-ease), border-color var(--tb-duration-slow) var(--tb-ease);
+}
+.tb-card.is-focus-anchor { position: relative; }
+.tb-card.is-focused:focus { outline: none; }
+
+/* The hold: four dots circle the pointer for as long as the press must last (--_hold, set by the
+   script), then open out and fade as the card comes forward. */
+.tb-hold-ring {
+  position: fixed;
+  z-index: var(--tb-z-tooltip);
+  width: var(--tb-space-6);
+  height: var(--tb-space-6);
+  margin: calc(var(--tb-space-6) / -2) 0 0 calc(var(--tb-space-6) / -2);
+  pointer-events: none;
+  animation: tb-hold-spin var(--_hold, 500ms) linear forwards, tb-hold-in var(--tb-duration) var(--tb-ease);
+}
+.tb-hold-ring > span {
+  position: absolute;
+  --_dot: calc(var(--tb-space-1) + var(--tb-border-width));
+  top: calc(50% - var(--_dot) / 2);
+  left: calc(50% - var(--_dot) / 2);
+  width: var(--_dot);
+  height: var(--_dot);
+  background: var(--tb-fg-link);
+  border-radius: var(--tb-radius-full);
+  transform: rotate(var(--_a)) translateX(var(--tb-space-3));
+}
+.tb-hold-ring > span:nth-child(1) { --_a: 0deg; }
+.tb-hold-ring > span:nth-child(2) { --_a: 90deg; opacity: 0.8; }
+.tb-hold-ring > span:nth-child(3) { --_a: 180deg; opacity: 0.6; }
+.tb-hold-ring > span:nth-child(4) { --_a: 270deg; opacity: 0.4; }
+.tb-hold-ring.is-done { animation: tb-hold-out var(--tb-duration) var(--tb-ease) forwards; }
+@keyframes tb-hold-spin {
+  from { transform: rotate(0) scale(1.15); }
+  to { transform: rotate(2turn) scale(0.8); }
+}
+@keyframes tb-hold-in { from { opacity: 0; } }
+@keyframes tb-hold-out {
+  from { transform: rotate(2turn) scale(0.8); opacity: 1; }
+  to { transform: rotate(2.25turn) scale(1.8); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tb-focus-dim,
+  .tb-card.is-focused { transition: none; }
+}
+
+/* Expand: a minimal icon button at the end of a chart card's actions. It opens the chart in a
+   tb-dialog--full, where tb-card-expand-view holds the chart drawn again at the larger size. */
+.tb-card-expand { color: var(--tb-fg-muted); }
+.tb-card-expand:hover { color: var(--tb-fg); }
+.tb-card-expand-view {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--tb-space-4);
+  min-height: 0;
+  overflow: auto;
+}
+.tb-card-expand-view > * { flex: none; box-sizing: border-box; width: 100%; max-width: 100%; padding: 0; }
+.tb-card-expand-view:not(.is-live) svg:not(.tb-icon) {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: calc(100vh - 220px);
+  margin: 0 auto;
+}
+/* A page that draws the chart again itself hands over a live canvas that takes the whole view. */
+.tb-card-expand-view.is-live { align-items: stretch; justify-content: stretch; overflow: hidden; }
+.tb-card-expand-view.is-live > * { flex: 1; min-height: 0; }
+
+/* ------------------------------------------------------------------------------------------
+   Table
+   ------------------------------------------------------------------------------------------ */
+
+.tb-table {
+  --_table-row: 28px;
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: var(--tb-text-md);
+  line-height: var(--tb-leading-tight);
+  color: var(--tb-fg);
+  background: var(--tb-bg-surface);
+}
+
+.tb-table th,
+.tb-table td {
+  height: var(--_table-row);
+  padding: 0 var(--tb-space-3);
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+  border-bottom: var(--tb-border-width) solid var(--tb-border);
+}
+
+.tb-table thead th {
+  font-size: var(--tb-text-sm);
+  font-weight: var(--tb-weight-medium);
+  color: var(--tb-fg-muted);
+  background: var(--tb-bg-surface);
+  border-bottom-color: var(--tb-border-strong);
+}
+
+.tb-table tbody tr:last-child > * { border-bottom: 0; }
+
+.tb-table .is-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.tb-table tbody tr {
+  transition: background-color var(--tb-duration-fast) var(--tb-ease);
+}
+.tb-table tbody tr:hover { background: var(--tb-bg-hover); }
+
+.tb-table--striped tbody tr:nth-child(even) { background: var(--tb-bg-sunken); }
+.tb-table--striped tbody tr:hover { background: var(--tb-bg-active); }
+
+.tb-table tbody tr.is-selected,
+.tb-table tbody tr.is-selected:hover { background: var(--tb-bg-selected); }
+
+.tb-table--bordered {
+  border: var(--tb-border-width) solid var(--tb-border);
+}
+.tb-table--bordered th:not(:last-child),
+.tb-table--bordered td:not(:last-child) {
+  border-right: var(--tb-border-width) solid var(--tb-border);
+}
+
+/* A scrolling frame. The header row sticks to its top. Set max-height on the wrap. */
+.tb-table-wrap {
+  overflow: auto;
+  max-width: 100%;
+  background: var(--tb-bg-surface);
+}
+.tb-table-wrap > .tb-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.tb-table-wrap > .tb-table--bordered { border: 0; }
+
+/* Sortable headers. The arrow is drawn in CSS so no icon is needed. */
+.tb-table th[data-tb-sort] {
+  cursor: pointer;
+  user-select: none;
+}
+.tb-table th[data-tb-sort]:hover { color: var(--tb-fg); }
+.tb-table th[data-tb-sort]:focus-visible {
+  outline: 2px solid var(--tb-border-focus);
+  outline-offset: -2px;
+}
+.tb-table th[data-tb-sort]::after {
+  content: "";
+  display: inline-block;
+  width: 0;
+  height: 0;
+  margin-left: var(--tb-space-1);
+  vertical-align: middle;
+  border-left: var(--tb-space-1) solid transparent;
+  border-right: var(--tb-space-1) solid transparent;
+  border-top: var(--tb-space-1) solid currentColor;
+  opacity: 0;
+  transition: opacity var(--tb-duration-fast) var(--tb-ease);
+}
+.tb-table th[data-tb-sort]:hover::after { opacity: 0.4; }
+.tb-table th.is-sorted-asc,
+.tb-table th.is-sorted-desc { color: var(--tb-fg); }
+.tb-table th.is-sorted-asc::after,
+.tb-table th.is-sorted-desc::after { opacity: 1; }
+.tb-table th.is-sorted-asc::after {
+  border-top: 0;
+  border-bottom: var(--tb-space-1) solid currentColor;
+}
+
+/* ------------------------------------------------------------------------------------------
+   Tabs
+   ------------------------------------------------------------------------------------------ */
+
+.tb-tabs {
+  display: flex;
+  align-items: stretch;
+  gap: var(--tb-space-4);
+  overflow-x: auto;
+  /* The rule under the bar is a shadow so the active underline can sit on top of it. */
+  box-shadow: inset 0 calc(var(--tb-border-width) * -1) 0 var(--tb-border);
+}
+
+.tb-tab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tb-space-1);
+  flex: none;
+  height: var(--tb-control-md);
+  margin: 0;
+  padding: 0 var(--tb-space-1);
+  font-family: var(--tb-font);
+  font-size: var(--tb-text-md);
+  font-weight: var(--tb-weight-medium);
+  color: var(--tb-fg-muted);
+  white-space: nowrap;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  cursor: pointer;
+  transition: color var(--tb-duration-fast) var(--tb-ease);
+}
+.tb-tab:hover { color: var(--tb-fg); }
+.tb-tab:focus-visible {
+  outline: 2px solid var(--tb-border-focus);
+  outline-offset: -2px;
+}
+.tb-tab::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: transparent;
+  transition: background-color var(--tb-duration-fast) var(--tb-ease);
+}
+.tb-tab.is-active { color: var(--tb-fg); }
+.tb-tab.is-active::after { background: var(--tb-accent); }
+.tb-tab:disabled,
+.tb-tab[aria-disabled="true"] {
+  color: var(--tb-fg-subtle);
+  cursor: not-allowed;
+}
+
+.tb-tab-panel { padding-top: var(--tb-space-4); }
+.tb-tab-panel[hidden] { display: none; }
+.tb-tab-panel:focus-visible {
+  outline: 2px solid var(--tb-border-focus);
+  outline-offset: 1px;
+}
+
+/* ------------------------------------------------------------------------------------------
+   Dialog
+   ------------------------------------------------------------------------------------------ */
+
+.tb-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--tb-z-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--tb-space-8) var(--tb-space-4);
+  background: var(--tb-bg-overlay);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity var(--tb-duration) var(--tb-ease), visibility 0s linear var(--tb-duration);
+}
+.tb-dialog-backdrop.is-open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity var(--tb-duration) var(--tb-ease), visibility 0s linear 0s;
+}
+
+.tb-dialog {
+  --_dialog-width: 480px;
+  display: flex;
+  flex-direction: column;
+  width: var(--_dialog-width);
+  max-width: 100%;
+  max-height: 100%;
+  color: var(--tb-fg);
+  background: var(--tb-bg-raised);
+  border: var(--tb-border-width) solid var(--tb-border);
+  border-radius: var(--tb-radius-lg);
+  box-shadow: var(--tb-shadow-lg);
+  transform: translateY(var(--tb-space-2));
+  transition: transform var(--tb-duration) var(--tb-ease);
+}
+.tb-dialog-backdrop.is-open .tb-dialog { transform: none; }
+.tb-dialog:focus-visible {
+  outline: 2px solid var(--tb-border-focus);
+  outline-offset: 1px;
+}
+
+.tb-dialog--sm { --_dialog-width: 360px; }
+.tb-dialog--lg { --_dialog-width: 720px; }
+
+/* Full: near the whole viewport, for a chart or a canvas seen large. Same header, same close. */
+.tb-dialog--full { --_dialog-width: 100%; height: 100%; }
+.tb-dialog-backdrop:has(> .tb-dialog--full) { padding: var(--tb-space-4); }
+.tb-dialog--full > .tb-dialog-body {
+  display: flex;
+  flex-direction: column;
+  padding: var(--tb-space-5) var(--tb-space-6);
+}
+.tb-dialog--full > .tb-dialog-header > .tb-legend { flex: none; margin-right: var(--tb-space-3); }
+
+.tb-dialog-header {
+  display: flex;
+  align-items: center;
+  gap: var(--tb-space-2);
+  flex: none;
+  min-height: var(--tb-control-lg);
+  padding: var(--tb-space-1) var(--tb-space-2) var(--tb-space-1) var(--tb-space-4);
+  border-bottom: var(--tb-border-width) solid var(--tb-border);
+  border-radius: var(--tb-radius-lg) var(--tb-radius-lg) 0 0;
+}
+
+.tb-dialog .tb-dialog-title {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: var(--tb-text-lg);
+  font-weight: var(--tb-weight-semibold);
+  line-height: var(--tb-leading-tight);
+}
+
+.tb-dialog-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: var(--tb-space-4);
+}
+.tb-dialog-body > :first-child { margin-top: 0; }
+.tb-dialog-body > :last-child { margin-bottom: 0; }
+
+.tb-dialog-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--tb-space-2);
+  flex: none;
+  padding: var(--tb-space-3) var(--tb-space-4);
+  border-top: var(--tb-border-width) solid var(--tb-border);
+}
+
+/* A destructive dialog says so with its icon and its button, not with a coloured strip. */
+.tb-dialog--danger .tb-dialog-header > .tb-icon { color: var(--tb-danger); }
+
+/* ------------------------------------------------------------------------------------------
+   Toast
+   ------------------------------------------------------------------------------------------ */
+
+.tb-toast-stack {
+  position: fixed;
+  right: var(--tb-space-4);
+  bottom: var(--tb-space-4);
+  z-index: var(--tb-z-toast);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--tb-space-2);
+  width: 360px;
+  max-width: calc(100vw - var(--tb-space-4) * 2);
+  pointer-events: none;
+}
+
+.tb-toast {
+  --_toast-tone: var(--tb-fg-muted);
+  display: flex;
+  align-items: center;
+  gap: var(--tb-space-2);
+  width: 100%;
+  min-height: var(--tb-control-lg);
+  padding: var(--tb-space-2) var(--tb-space-2) var(--tb-space-2) var(--tb-space-3);
+  font-size: var(--tb-text-md);
+  line-height: var(--tb-leading);
+  color: var(--tb-fg);
+  background: var(--tb-bg-raised);
+  border: var(--tb-border-width) solid var(--tb-border);
+  border-radius: var(--tb-radius-md);
+  box-shadow: var(--tb-shadow-md);
+  pointer-events: auto;
+  transition: opacity var(--tb-duration) var(--tb-ease), transform var(--tb-duration) var(--tb-ease);
+}
+.tb-toast.is-entering {
+  opacity: 0;
+  transform: translateY(var(--tb-space-2));
+}
+.tb-toast.is-leaving {
+  opacity: 0;
+  transform: translateX(var(--tb-space-4));
+}
+
+/* The tone shows in the icon, on a tinted disc; the box itself stays neutral. */
+.tb-toast-icon {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: var(--tb-control-sm);
+  height: var(--tb-control-sm);
+  color: var(--_toast-tone);
+  background: color-mix(in srgb, var(--_toast-tone) 14%, transparent);
+  border-radius: var(--tb-radius-full);
+}
+.tb-toast-message {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.tb-toast-action,
+.tb-toast-close { flex: none; }
+.tb-toast-action:focus-visible,
+.tb-toast-close:focus-visible {
+  outline: 2px solid var(--tb-border-focus);
+  outline-offset: 1px;
+}
+
+.tb-toast--danger { --_toast-tone: var(--tb-danger); }
+.tb-toast--warning { --_toast-tone: var(--tb-warning); }
+.tb-toast--success { --_toast-tone: var(--tb-success); }
+.tb-toast--ai { --_toast-tone: var(--tb-ai); }
+
+/* ------------------------------------------------------------------------------------------
+   Callout
+   ------------------------------------------------------------------------------------------ */
+
+.tb-callout {
+  --_callout-tone: var(--tb-accent);
+  --_callout-bg: var(--tb-accent-soft);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--tb-space-2);
+  padding: var(--tb-space-3) var(--tb-space-4) var(--tb-space-3) var(--tb-space-3);
+  font-size: var(--tb-text-md);
+  line-height: var(--tb-leading);
+  color: var(--tb-fg);
+  background: var(--_callout-bg);
+  border: var(--tb-border-width) solid color-mix(in srgb, var(--_callout-tone) 35%, transparent);
+  border-radius: var(--tb-radius-md);
+}
+.tb-callout > .tb-icon {
+  margin-top: calc((1em * var(--tb-leading) - var(--tb-space-4)) / 2);
+  color: var(--_callout-tone);
+}
+.tb-callout-content { flex: 1; min-width: 0; }
+.tb-callout-content p { margin: 0; }
+.tb-callout-content p + p { margin-top: var(--tb-space-2); }
+.tb-callout .tb-callout-title {
+  display: block;
+  margin: 0 0 var(--tb-space-1);
+  font-size: var(--tb-text-md);
+  font-weight: var(--tb-weight-semibold);
+}
+
+.tb-callout--danger { --_callout-tone: var(--tb-danger); --_callout-bg: var(--tb-danger-soft); }
+.tb-callout--warning { --_callout-tone: var(--tb-warning); --_callout-bg: var(--tb-warning-soft); }
+.tb-callout--success { --_callout-tone: var(--tb-success); --_callout-bg: var(--tb-success-soft); }
+.tb-callout--ai { --_callout-tone: var(--tb-ai); --_callout-bg: var(--tb-ai-soft); }
+
+/* ------------------------------------------------------------------------------------------
+   Empty state
+   ------------------------------------------------------------------------------------------ */
+
+.tb-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--tb-space-2);
+  padding: var(--tb-space-10) var(--tb-space-6);
+  text-align: center;
+  color: var(--tb-fg);
+}
+.tb-empty-icon {
+  display: inline-flex;
+  margin-bottom: var(--tb-space-1);
+  color: var(--tb-fg-subtle);
+}
+.tb-empty-icon > .tb-icon,
+.tb-empty-icon > svg {
+  width: var(--tb-space-8);
+  height: var(--tb-space-8);
+}
+.tb-empty .tb-empty-title {
+  margin: 0;
+  font-size: var(--tb-text-lg);
+  font-weight: var(--tb-weight-semibold);
+  line-height: var(--tb-leading-tight);
+}
+.tb-empty .tb-empty-description {
+  margin: 0;
+  max-width: 360px;
+  font-size: var(--tb-text-md);
+  color: var(--tb-fg-muted);
+}
+.tb-empty-action {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--tb-space-2);
+  margin-top: var(--tb-space-2);
+}
+
+.tb-empty--compact {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: var(--tb-space-2);
+  padding: var(--tb-space-4);
+}
+.tb-empty--compact .tb-empty-icon { margin: 0; }
+.tb-empty--compact .tb-empty-icon > .tb-icon,
+.tb-empty--compact .tb-empty-icon > svg {
+  width: var(--tb-space-4);
+  height: var(--tb-space-4);
+}
+.tb-empty--compact .tb-empty-title { font-size: var(--tb-text-md); font-weight: var(--tb-weight-medium); }
+.tb-empty--compact .tb-empty-action { margin-top: 0; }
+
+/* ------------------------------------------------------------------------------------------
+   Progress and spinner
+   ------------------------------------------------------------------------------------------ */
+
+.tb-progress {
+  --_progress-tone: var(--tb-accent);
+  position: relative;
+  display: block;
+  width: 100%;
+  height: calc(var(--tb-space-1) * 1.5);
+  overflow: hidden;
+  background: var(--tb-bg-sunken);
+  border-radius: var(--tb-radius-sm);
+}
+.tb-progress-bar {
+  display: block;
+  height: 100%;
+  width: calc(var(--value, 0) * 1%);
+  max-width: 100%;
+  background: var(--_progress-tone);
+  transition: width var(--tb-duration) var(--tb-ease);
+}
+
+.tb-progress--sm { height: var(--tb-space-1); }
+
+.tb-progress--danger { --_progress-tone: var(--tb-danger); }
+.tb-progress--warning { --_progress-tone: var(--tb-warning); }
+.tb-progress--success { --_progress-tone: var(--tb-success); }
+.tb-progress--ai { --_progress-tone: var(--tb-ai); }
+
+.tb-progress--indeterminate .tb-progress-bar {
+  width: 30%;
+  animation: tb-progress-slide calc(var(--tb-duration) * 8) var(--tb-ease) infinite;
+}
+@keyframes tb-progress-slide {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(340%); }
+}
+
+/* A label row above a bar: what is running on the left, the value on the right. */
+.tb-progress-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--tb-space-2);
+  margin-bottom: var(--tb-space-1);
+  font-size: var(--tb-text-sm);
+  color: var(--tb-fg-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.tb-spinner {
+  --_spinner-size: var(--tb-space-4);
+  display: inline-block;
+  flex: none;
+  width: var(--_spinner-size);
+  height: var(--_spinner-size);
+  vertical-align: middle;
+  border: 2px solid var(--tb-border);
+  border-top-color: var(--tb-accent);
+  border-radius: var(--tb-radius-full);
+  animation: tb-spin calc(var(--tb-duration) * 5) linear infinite;
+}
+.tb-spinner--sm { --_spinner-size: var(--tb-space-3); border-width: var(--tb-border-width); }
+.tb-spinner--lg { --_spinner-size: var(--tb-space-6); }
+@keyframes tb-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ------------------------------------------------------------------------------------------
+   Reduced motion. Movement goes, state changes stay.
+   ------------------------------------------------------------------------------------------ */
+
+@media (prefers-reduced-motion: reduce) {
+  .tb-dialog,
+  .tb-dialog-backdrop,
+  .tb-toast,
+  .tb-progress-bar,
+  .tb-card--interactive,
+  .tb-tab,
+  .tb-table tbody tr { transition: none; }
+  .tb-toast.is-entering,
+  .tb-toast.is-leaving,
+  .tb-dialog { transform: none; }
+  .tb-progress--indeterminate .tb-progress-bar { animation-duration: calc(var(--tb-duration) * 24); }
+  .tb-spinner { animation-duration: calc(var(--tb-duration) * 15); }
+}

@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard, Tabula templates</title>
+    <script>try { var s = localStorage, h = document.documentElement.classList; if (s.getItem('tb-theme') !== 'light') h.add('tb-dark'); if (s.getItem('tb-nav') === 'left') h.add('tb-nav-left'); if (s.getItem('tb-nav-collapsed') === '1') h.add('tb-nav-collapsed') } catch (e) {}</script>
+    <link rel="stylesheet" href="../src/tabula.css" />
+    <link rel="stylesheet" href="./shared/pages.css" />
+    <link rel="stylesheet" href="./dashboard.css" />
+  </head>
+  <body>
+    <header data-shell></header>
+
+    <div class="tb-page">
+      <div class="tb-page-toolbar">
+        <h1 class="tb-page-title">Dashboard</h1>
+        <div class="tb-page-context">
+          <div class="tb-button-group" role="group" aria-label="Period" id="db-period">
+            <button class="tb-button tb-button--sm" type="button" data-period="7d" aria-pressed="false">7 days</button>
+            <button class="tb-button tb-button--sm" type="button" data-period="30d" aria-pressed="false">30 days</button>
+            <button class="tb-button tb-button--sm" type="button" data-period="90d" aria-pressed="false">90 days</button>
+            <button class="tb-button tb-button--sm" type="button" data-period="12m" aria-pressed="true">12 months</button>
+          </div>
+          <select class="tb-select tb-select--sm" id="db-compare" aria-label="Compare with">
+            <option value="prev">vs the period before</option>
+            <option value="year">vs the same days last year</option>
+          </select>
+          <span class="tb-text tb-text--sm tb-text--muted tb-num pg-nowrap" id="db-range"></span>
+        </div>
+        <div class="tb-chip-group" id="db-chips" aria-live="polite" aria-label="Filters"></div>
+        <span class="tb-spacer"></span>
+        <div class="tb-page-actions">
+          <button class="tb-button tb-button--primary" type="button" id="db-export-open" data-tb-dialog-open="db-export">
+            <svg class="tb-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3" /><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><path d="m7 10 5 5 5-5" /></svg>
+            Export
+          </button>
+        </div>
+      </div>
+      <div class="pg-progress-slot" aria-hidden="true">
+        <div class="tb-progress tb-progress--sm tb-progress--indeterminate" id="db-progress" hidden><span class="tb-progress-bar"></span></div>
+      </div>
+
+      <main class="tb-page-main db-main" id="db-main">
+        <section class="tb-card db-kpi" data-kpi="revenue" data-tb-section="kpi-revenue" data-tb-label="Revenue" aria-labelledby="db-k-revenue">
+          <div class="tb-card-header">
+            <h2 class="tb-card-title" id="db-k-revenue">Revenue</h2>
+            <div class="tb-card-actions"><span class="pg-info" data-tb-tooltip="Invoiced revenue in euros, before tax, for the period and the filters." tabindex="0" aria-label="About this figure"></span></div>
+          </div>
+          <div class="tb-card-body tb-stat tb-stat--lg db-kpi-body"></div>
+        </section>
+        <section class="tb-card db-kpi" data-kpi="orders" data-tb-section="kpi-orders" data-tb-label="Orders" aria-labelledby="db-k-orders">
+          <div class="tb-card-header">
+            <h2 class="tb-card-title" id="db-k-orders">Orders</h2>
+            <div class="tb-card-actions"><span class="pg-info" data-tb-tooltip="Orders placed in the period, counted on the day they were placed." tabindex="0" aria-label="About this figure"></span></div>
+          </div>
+          <div class="tb-card-body tb-stat tb-stat--lg db-kpi-body"></div>
+        </section>
+        <section class="tb-card db-kpi" data-kpi="aov" data-tb-section="kpi-aov" data-tb-label="Average order" aria-labelledby="db-k-aov">
+          <div class="tb-card-header">
+            <h2 class="tb-card-title" id="db-k-aov">Average order</h2>
+            <div class="tb-card-actions"><span class="pg-info" data-tb-tooltip="Revenue divided by orders." tabindex="0" aria-label="About this figure"></span></div>
+          </div>
+          <div class="tb-card-body tb-stat tb-stat--lg db-kpi-body"></div>
+        </section>
+        <section class="tb-card db-kpi" data-kpi="conversion" data-tb-section="kpi-conversion" data-tb-label="Conversion" aria-labelledby="db-k-conversion">
+          <div class="tb-card-header">
+            <h2 class="tb-card-title" id="db-k-conversion">Conversion</h2>
+            <div class="tb-card-actions"><span class="pg-info" data-tb-tooltip="Orders as a share of site visits. The change is in percentage points." tabindex="0" aria-label="About this figure"></span></div>
+          </div>
+          <div class="tb-card-body tb-stat tb-stat--lg db-kpi-body"></div>
+        </section>
+
+        <section class="tb-card db-line" data-tb-section="line" data-tb-label="Over time" aria-labelledby="db-line-title">
+          <div class="tb-card-header">
+            <h2 class="tb-card-title" id="db-line-title">Revenue per day</h2>
+            <div class="tb-card-actions">
+              <span id="db-line-legend"></span>
+              <div class="tb-button-group" role="group" aria-label="Measure">
+                <button class="tb-button tb-button--sm" type="button" data-measure="revenue" aria-pressed="true">Revenue</button>
+                <button class="tb-button tb-button--sm" type="button" data-measure="orders" aria-pressed="false">Orders</button>
+              </div>
+              <button class="tb-button tb-button--minimal tb-button--sm tb-button--icon tb-card-expand" type="button" data-tb-expand aria-label="Expand the chart over time" data-tb-tooltip="Expand"><svg class="tb-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6" /><path d="m21 3-7 7" /><path d="m3 21 7-7" /><path d="M9 21H3v-6" /></svg></button>
+            </div>
+          </div>
+          <div class="tb-card-body tb-chart-body" id="db-line-body"></div>
+        </section>
+
+        <section class="tb-card db-donut" data-tb-section="donut" data-tb-label="By region" aria-labelledby="db-donut-title">
+          <div class="tb-card-header">
+            <h2 class="tb-card-title" id="db-donut-title">Revenue by region</h2>
+            <div class="tb-card-actions">
+              <button class="tb-button tb-button--minimal tb-button--sm tb-button--icon tb-card-expand" type="button" data-tb-expand aria-label="Expand revenue by region" data-tb-tooltip="Expand"><svg class="tb-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6" /><path d="m21 3-7 7" /><path d="m3 21 7-7" /><path d="M9 21H3v-6" /></svg></button>
+            </div>
+          </div>
+          <div class="tb-card-body tb-chart-body" id="db-donut-body"></div>
+          <div class="tb-card-footer pg-foot" id="db-donut-foot"></div>
+        </section>
+
+        <section class="tb-card db-bars" data-tb-section="bars" data-tb-label="By product" aria-labelledby="db-bars-title">
+          <div class="tb-card-header">
+            <h2 class="tb-card-title" id="db-bars-title">Revenue by product</h2>
+            <div class="tb-card-actions">
+              <span id="db-bars-legend"></span>
+              <button class="tb-button tb-button--minimal tb-button--sm tb-button--icon tb-card-expand" type="button" data-tb-expand aria-label="Expand revenue by product" data-tb-tooltip="Expand"><svg class="tb-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6" /><path d="m21 3-7 7" /><path d="m3 21 7-7" /><path d="M9 21H3v-6" /></svg></button>
+            </div>
+          </div>
+          <div class="tb-card-body tb-chart-body" id="db-bars-body"></div>
+        </section>
+
+        <section class="tb-card db-countries" data-tb-section="countries" data-tb-label="Countries" aria-labelledby="db-countries-title">
+          <div class="tb-card-header">
+            <h2 class="tb-card-title" id="db-countries-title">Countries</h2>
+            <div class="tb-card-actions"><span class="tb-text tb-text--sm tb-text--muted" id="db-countries-count"></span></div>
+          </div>
+          <div class="tb-card-body tb-card-body--flush">
+            <div class="tb-table-wrap db-table-wrap">
+              <table class="tb-table db-table" id="db-countries-table">
+                <thead>
+                  <tr>
+                    <th data-tb-sort>Country</th>
+                    <th data-tb-sort>Region</th>
+                    <th class="is-num" data-tb-sort="desc">Revenue</th>
+                    <th class="is-num" data-tb-sort="desc">Orders</th>
+                    <th class="is-num" data-tb-sort="desc">Average order</th>
+                    <th class="is-num" data-tb-sort="desc">Change</th>
+                    <th data-tb-sort="desc">Share</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="tb-card-footer pg-foot" id="db-countries-foot"></div>
+        </section>
+      </main>
+    </div>
+
+    <div class="tb-dialog-backdrop" id="db-export">
+      <div class="tb-dialog" role="dialog" aria-modal="true" aria-labelledby="db-export-title">
+        <div class="tb-dialog-header">
+          <h2 class="tb-dialog-title" id="db-export-title">Export data</h2>
+          <button class="tb-button tb-button--minimal tb-button--sm tb-button--icon" type="button" data-tb-dialog-close aria-label="Close">
+            <svg class="tb-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+          </button>
+        </div>
+        <div class="tb-dialog-body tb-stack">
+          <p class="tb-text" id="db-export-scope"></p>
+          <div class="tb-stack tb-gap-1" role="radiogroup" aria-label="What to export">
+            <label class="tb-radio">
+              <input type="radio" name="db-export-kind" value="days" checked />
+              <span>Daily figures, one row per day</span>
+            </label>
+            <label class="tb-radio">
+              <input type="radio" name="db-export-kind" value="countries" />
+              <span>Country table, one row per country</span>
+            </label>
+          </div>
+          <p class="tb-text tb-text--sm tb-text--muted" id="db-export-file"></p>
+        </div>
+        <div class="tb-dialog-footer">
+          <button class="tb-button" type="button" data-tb-dialog-close>Cancel</button>
+          <button class="tb-button tb-button--primary" type="button" id="db-export-confirm">Download CSV</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="./dashboard.js"></script>
+  </body>
+</html>

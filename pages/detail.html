@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Account, Tabula templates</title>
+    <script>try { var s = localStorage, h = document.documentElement.classList; if (s.getItem('tb-theme') !== 'light') h.add('tb-dark'); if (s.getItem('tb-nav') === 'left') h.add('tb-nav-left'); if (s.getItem('tb-nav-collapsed') === '1') h.add('tb-nav-collapsed') } catch (e) {}</script>
+    <link rel="stylesheet" href="../src/tabula.css" />
+    <link rel="stylesheet" href="./shared/pages.css" />
+    <link rel="stylesheet" href="./detail.css" />
+  </head>
+  <body>
+    <header data-shell></header>
+
+    <div class="tb-page">
+      <div class="tb-page-toolbar">
+        <nav class="tb-breadcrumbs de-crumbs" aria-label="Where you are"><ol><li><a class="tb-breadcrumb" href="./table.html">Accounts</a></li><li><span class="tb-breadcrumb" aria-current="page" id="de-crumb"></span></li></ol></nav>
+        <div class="tb-page-context" id="de-context"></div>
+        <span class="tb-spacer"></span>
+        <div class="tb-page-actions">
+          <div class="tb-button-group" role="group" aria-label="Move between accounts">
+            <a class="tb-button tb-button--icon" id="de-prev" aria-label="Previous account" data-tb-tooltip="Previous account">
+              <svg class="tb-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+            </a>
+            <a class="tb-button tb-button--icon" id="de-next" aria-label="Next account" data-tb-tooltip="Next account">
+              <svg class="tb-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+            </a>
+          </div>
+          <button class="tb-button tb-button--primary" type="button" id="de-note-open">
+            <svg class="tb-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9" /><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z" /></svg>
+            Add a note
+          </button>
+        </div>
+      </div>
+
+      <main class="tb-page-main de-main" id="de-main">
+        <section class="tb-card tb-stat-strip de-figures" aria-label="Key figures" id="de-figures"></section>
+
+        <div class="de-left">
+        <section class="tb-card de-chart" aria-labelledby="de-chart-title">
+          <div class="tb-card-header">
+            <h2 class="tb-card-title" id="de-chart-title">Revenue by month</h2>
+            <div class="tb-card-actions">
+              <span id="de-chart-legend"></span>
+              <div class="tb-button-group" role="group" aria-label="Measure">
+                <button class="tb-button tb-button--sm" type="button" data-measure="revenue" aria-pressed="true">Revenue</button>
+                <button class="tb-button tb-button--sm" type="button" data-measure="orders" aria-pressed="false">Orders</button>
+              </div>
+              <span data-expand="Revenue by month"></span>
+            </div>
+          </div>
+          <div class="tb-card-body tb-chart-body" id="de-chart-body"></div>
+        </section>
+
+        <section class="tb-card de-risk" aria-labelledby="de-risk-title">
+          <div class="tb-card-header"><h2 class="tb-card-title" id="de-risk-title">Churn risk</h2></div>
+          <div class="tb-card-body" id="de-risk-body"></div>
+        </section>
+
+        <section class="tb-card de-timeline" aria-labelledby="de-timeline-title">
+          <div class="tb-card-header">
+            <h2 class="tb-card-title" id="de-timeline-title">Timeline</h2>
+            <div class="tb-card-actions"><div class="tb-chip-group" id="de-kinds" role="group" aria-label="Show"></div></div>
+          </div>
+          <div class="tb-card-body de-timeline-body" id="de-timeline-body"></div>
+        </section>
+
+        </div>
+
+        <div class="de-side">
+          <section class="tb-card" aria-labelledby="de-about-title">
+            <div class="tb-card-header"><h2 class="tb-card-title" id="de-about-title">About</h2></div>
+            <div class="tb-card-body" id="de-about"></div>
+          </section>
+          <section class="tb-card" aria-labelledby="de-products-title">
+            <div class="tb-card-header">
+              <h2 class="tb-card-title" id="de-products-title">Revenue by product</h2>
+              <div class="tb-card-actions"><span data-expand="Revenue by product"></span></div>
+            </div>
+            <div class="tb-card-body tb-chart-body" id="de-products"></div>
+          </section>
+          <section class="tb-card" aria-labelledby="de-related-title">
+            <div class="tb-card-header"><h2 class="tb-card-title" id="de-related-title">Similar accounts</h2></div>
+            <div class="tb-card-body tb-card-body--flush" id="de-related"></div>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <div class="tb-dialog-backdrop" id="de-note">
+      <div class="tb-dialog" role="dialog" aria-modal="true" aria-labelledby="de-note-title">
+        <div class="tb-dialog-header">
+          <h2 class="tb-dialog-title" id="de-note-title">Add a note</h2>
+          <button class="tb-button tb-button--minimal tb-button--sm tb-button--icon" type="button" data-tb-dialog-close aria-label="Close">
+            <svg class="tb-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+          </button>
+        </div>
+        <div class="tb-dialog-body tb-stack">
+          <label class="tb-field">
+            <span class="tb-field-label">Note</span>
+            <textarea class="tb-input de-note-input" id="de-note-text" rows="4" placeholder="What happened, and what comes next"></textarea>
+            <span class="tb-field-help">The note goes on the timeline and stays in this browser.</span>
+          </label>
+        </div>
+        <div class="tb-dialog-footer">
+          <button class="tb-button" type="button" data-tb-dialog-close>Cancel</button>
+          <button class="tb-button tb-button--primary" type="button" id="de-note-save" disabled>Add note</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="./detail.js"></script>
+  </body>
+</html>

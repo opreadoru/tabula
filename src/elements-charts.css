@@ -1,0 +1,205 @@
+/* Charts. The marks, axes, tooltips and states that src/charts.js draws. Every colour comes from a
+   token: series use --tb-series-*, meanings use their own token, grid lines --tb-border, axis
+   text --tb-fg-muted. */
+
+/* The card body a chart sits in. */
+.tb-chart-body { padding: var(--tb-space-3) var(--tb-space-3) var(--tb-space-2); min-width: 0; }
+
+.tb-chart { display: block; overflow: visible; user-select: none; font-variant-numeric: tabular-nums; }
+.tb-chart-spark { display: block; overflow: visible; }
+.tb-chart-axis { font-size: var(--tb-text-xs); fill: var(--tb-fg-muted); font-variant-numeric: tabular-nums; }
+.tb-chart-label { font-size: var(--tb-text-sm); fill: var(--tb-fg); }
+.tb-chart-grid { stroke: var(--tb-border); shape-rendering: crispEdges; }
+.tb-chart [data-mark] { cursor: pointer; }
+.tb-chart [data-mark]:focus { outline: none; }
+
+/* Reference lines and moments */
+.tb-chart-marker { pointer-events: none; }
+.tb-chart-marker line { stroke: var(--tb-fg-subtle); stroke-dasharray: 4 3; }
+
+/* Columns of a line or area chart: invisible until hovered, focused or selected. */
+.tb-chart-col { fill: transparent; }
+.tb-chart-col:hover { fill: var(--tb-bg-hover); }
+.tb-chart-col:focus-visible { fill: var(--tb-bg-hover); stroke: var(--tb-border-focus); stroke-width: 2; }
+
+/* A group is one bar slot, or one funnel stage: a hit area behind its marks. */
+.tb-chart-hit { fill: transparent; }
+.tb-chart-group:hover .tb-chart-hit { fill: var(--tb-bg-hover); }
+.tb-chart-group.is-selected .tb-chart-hit { fill: var(--tb-bg-selected); }
+.tb-chart-group:focus-visible .tb-chart-hit { stroke: var(--tb-border-focus); stroke-width: 2; }
+.tb-chart-group.is-dim > rect:not(.tb-chart-hit) { opacity: 0.3; }
+.tb-chart-bar-value { fill: var(--tb-fg); }
+
+/* Heatmap cells */
+.tb-chart-cell rect { stroke: transparent; stroke-width: 1.5; }
+.tb-chart-cell:hover rect { stroke: var(--tb-fg-muted); }
+.tb-chart-cell.is-selected rect { stroke: var(--tb-fg); stroke-width: 2; }
+.tb-chart-cell:focus-visible rect { stroke: var(--tb-border-focus); stroke-width: 2; }
+.tb-chart-cell-text { font-size: var(--tb-text-xs); font-weight: var(--tb-weight-medium); fill: var(--tb-fg); pointer-events: none; font-variant-numeric: tabular-nums; }
+.tb-chart-cell-text.is-strong { fill: var(--tb-fg-on-accent); }
+.tb-chart-ramp { display: inline-flex; height: var(--tb-space-2); }
+.tb-chart-ramp > span { width: var(--tb-space-4); }
+
+/* Donut, with its legend beside it */
+.tb-chart-donut { display: flex; align-items: center; gap: var(--tb-space-4); min-height: 176px; }
+.tb-chart-donut > .tb-legend { flex: 1; }
+.tb-chart-donut-svg { flex: none; }
+.tb-chart-arc { stroke: var(--tb-bg-surface); stroke-width: 1.5; transition: opacity var(--tb-duration-fast) var(--tb-ease); }
+.tb-chart-arc:hover { opacity: 0.8; }
+.tb-chart-donut-svg.has-selection .tb-chart-arc:not(.is-selected) { opacity: 0.3; }
+.tb-chart-donut-value { font-size: var(--tb-text-xl); font-weight: var(--tb-weight-semibold); fill: var(--tb-fg); font-variant-numeric: tabular-nums; }
+
+/* Scatter */
+.tb-chart-plot { fill: transparent; }
+.tb-chart[data-brush] :is(.tb-chart-plot, .tb-chart-grid, .tb-chart-axis) { cursor: crosshair; }
+.tb-chart-pt { stroke-width: 1.5; transition: opacity var(--tb-duration-fast) var(--tb-ease); }
+.tb-chart-pt:hover { stroke-width: 3; }
+.tb-chart-pt:focus-visible { stroke: var(--tb-border-focus); stroke-width: 3; }
+.tb-chart-pt.is-dim { opacity: 0.25; }
+.tb-chart-brush { fill: var(--tb-accent); fill-opacity: 0.08; stroke: var(--tb-accent); stroke-dasharray: 4 3; pointer-events: none; }
+.tb-chart-brush--live { fill-opacity: 0.12; }
+
+/* A legend under a chart. Heatmap and scatter legends start at the plot, past the axis. */
+.tb-chart-legend { margin-top: var(--tb-space-2); }
+.tb-swatch--dashed { height: 0; background: none; border-top: 2px dashed var(--_tone); }
+
+/* States */
+.tb-chart-skeleton { display: flex; }
+.tb-chart-skeleton > .tb-skeleton { flex: 1; height: 100%; }
+.tb-chart-empty { justify-content: center; }
+
+/* Tooltip body. The box itself is tb-tooltip. */
+.tb-chart-tip { position: fixed; min-width: 180px; max-width: 320px; pointer-events: none; z-index: var(--tb-z-tooltip); }
+.tb-chart-tip-title { margin-bottom: var(--tb-space-1); font-weight: var(--tb-weight-semibold); }
+.tb-chart-tip-row { display: grid; grid-template-columns: auto auto minmax(0, 1fr); align-items: center; gap: var(--tb-space-2); }
+.tb-chart-tip-row > b { font-weight: var(--tb-weight-semibold); text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tb-chart-tip-note { margin-top: var(--tb-space-1); opacity: 0.7; }
+
+@media (prefers-reduced-motion: reduce) {
+  .tb-chart-arc, .tb-chart-pt { transition: none; }
+}
+
+/* ------------------------------------------------------------------------------------------
+   Tree views (src/tree.js): one card, four views of one hierarchy. The card is one screen tall
+   unless the page sets --tb-tree-height.
+   ------------------------------------------------------------------------------------------ */
+
+.tb-tree {
+  --_col-w: 280px;
+  display: flex;
+  flex-direction: column;
+  height: var(--tb-tree-height, max(420px, calc(100vh - 150px)));
+  overflow: hidden;
+}
+.tb-tree > .tb-card-body { flex: 1; min-height: 0; }
+/* The view switch hides panes and header parts with the hidden attribute, on any page. */
+.tb-tree [hidden] { display: none !important; }
+.tb-tree-zoom { display: inline-block; min-width: var(--tb-space-10); text-align: center; color: var(--tb-fg-muted); }
+.tb-tree-when { display: inline-flex; align-items: center; gap: var(--tb-space-1); }
+.tb-tree-canvas { position: relative; overflow: hidden; }
+.tb-tree-pane { display: flex; flex-direction: column; }
+
+/* Tree */
+.tb-tree-svg, .tb-tree-ici {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  user-select: none;
+}
+.tb-tree-svg { cursor: grab; touch-action: none; }
+.tb-tree-svg.is-panning { cursor: grabbing; }
+.tb-tree-node, .tb-tree-ici-node { cursor: pointer; }
+.tb-tree-node:focus, .tb-tree-ici-node:focus { outline: none; }
+.tb-tree-box { rx: var(--tb-radius-md); fill: var(--tb-bg-surface); stroke: var(--tb-border); }
+.tb-tree-deck { fill: var(--tb-bg-surface); stroke: var(--tb-border-strong); }
+.tb-tree-node.is-path .tb-tree-box { stroke: var(--tb-accent); }
+.tb-tree-node.is-selected .tb-tree-box { fill: var(--tb-bg-selected); stroke: var(--tb-accent); stroke-width: calc(var(--tb-border-width) * 2); }
+.tb-tree-node:not(.is-selected, .is-path):hover .tb-tree-box { stroke: var(--tb-border-strong); }
+.tb-tree-node:focus-visible .tb-tree-box { stroke: var(--tb-border-focus); stroke-width: calc(var(--tb-border-width) * 2); }
+.tb-tree-label { font-size: var(--tb-text-sm); font-weight: var(--tb-weight-medium); fill: var(--tb-fg); }
+.tb-tree-meta { font-size: var(--tb-text-xs); fill: var(--tb-fg-muted); font-variant-numeric: tabular-nums; }
+.tb-tree-hidden { fill: var(--tb-fg-link); }
+.tb-tree-score { font-size: var(--tb-text-sm); font-weight: var(--tb-weight-semibold); fill: var(--tb-fg); font-variant-numeric: tabular-nums; }
+
+/* The key floats over the bottom left corner of the canvas. */
+.tb-tree-legend {
+  position: absolute;
+  left: var(--tb-space-3);
+  bottom: var(--tb-space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-1);
+  padding: var(--tb-space-2) var(--tb-space-3);
+  font-size: var(--tb-text-sm);
+}
+
+/* Columns: one column per level. Each scrolls on its own; the row of columns scrolls sideways
+   once they no longer fit. */
+.tb-tree-crumbs-bar { flex: none; min-height: var(--tb-control-md); padding: 0 var(--tb-space-4); border-bottom: var(--tb-border-width) solid var(--tb-border); }
+.tb-tree-crumbs-bar > .tb-breadcrumbs { flex: 1; }
+.tb-tree-cols { display: flex; flex: 1; min-height: 0; overflow-x: auto; overflow-y: hidden; }
+.tb-tree-col {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  width: var(--_col-w);
+  min-height: 0;
+  border-right: var(--tb-border-width) solid var(--tb-border);
+}
+.tb-tree-col.is-entering { animation: tb-tree-col-in 220ms var(--tb-ease) both; }
+@keyframes tb-tree-col-in {
+  from { opacity: 0; transform: translateX(16px); }
+  to { opacity: 1; transform: none; }
+}
+.tb-tree-col-head {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--tb-space-2);
+  min-height: var(--tb-control-md);
+  padding: 0 var(--tb-space-1) 0 var(--tb-space-4);
+  background: var(--tb-bg-sunken);
+  border-bottom: var(--tb-border-width) solid var(--tb-border);
+}
+.tb-tree-col-head .tb-caps { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.tb-tree-col-head .tb-button { flex: none; color: var(--tb-fg-muted); }
+.tb-tree-col-list { flex: 1; min-height: 0; margin: 0; padding: 0; overflow-y: auto; list-style: none; }
+.tb-tree-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--tb-space-4);
+  gap: var(--tb-space-1) var(--tb-space-2);
+  padding: var(--tb-space-2) var(--tb-space-2) var(--tb-space-2) var(--tb-space-4);
+  border-bottom: var(--tb-border-width) solid var(--tb-border);
+  cursor: pointer;
+}
+.tb-tree-row:hover { background: var(--tb-bg-hover); }
+.tb-tree-row.is-path { background: color-mix(in oklab, var(--tb-bg-selected) 45%, transparent); }
+.tb-tree-row.is-selected { background: var(--tb-bg-selected); }
+.tb-tree-row:focus-visible { outline-offset: -2px; }
+.tb-tree-row-label { grid-column: 1; overflow: hidden; font-weight: var(--tb-weight-medium); line-height: var(--tb-leading-tight); white-space: nowrap; text-overflow: ellipsis; }
+.tb-tree-row > .tb-bar { grid-column: 1; }
+.tb-tree-row-meta { grid-column: 1; display: flex; align-items: center; justify-content: space-between; gap: var(--tb-space-2); font-size: var(--tb-text-sm); }
+.tb-tree-row-chevron { grid-column: 2; grid-row: 1 / span 3; align-self: center; color: var(--tb-fg-subtle); }
+.tb-tree-row:is(.is-selected, .is-path) .tb-tree-row-chevron { color: var(--tb-fg); }
+
+/* Icicle */
+.tb-tree-ici-box { fill-opacity: 0.14; }
+.tb-tree-ici-node:hover .tb-tree-ici-box { fill-opacity: 0.26; }
+.tb-tree-ici-node.is-focus .tb-tree-ici-box { fill-opacity: 0.08; }
+.tb-tree-ici-node:focus-visible .tb-tree-ici-box { stroke: var(--tb-border-focus); stroke-width: 2; }
+.tb-tree-ici-focus { max-width: 280px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+
+/* Table */
+.tb-tree-table-wrap { flex: 1; min-height: 0; }
+.tb-tree-table tbody tr { cursor: pointer; }
+.tb-tree-table td.tb-tree-table-name { padding-left: calc(var(--tb-space-3) + var(--_depth, 0) * var(--tb-space-4)); }
+
+/* Expanded, the live pane fills the full-screen view. */
+.tb-card-expand-view.is-live > .tb-tree-canvas { position: relative; flex: 1; min-height: 60vh; }
+.tb-card-expand-view.is-live > .tb-tree-pane { flex: 1; min-height: 60vh; }
+
+@media (prefers-reduced-motion: reduce) {
+  .tb-tree-col.is-entering { animation: none; }
+}

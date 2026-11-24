@@ -1,0 +1,36 @@
+/* Layout editor template, prefix le-. The masthead, the two ways to start and the empty state.
+   Edit mode, the widget catalogue and the widgets are system components. */
+
+.le-main {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  align-content: start;
+  align-items: stretch;
+}
+.le-main > * { grid-column: 1 / -1; min-width: 0; }
+.le-main > [data-tb-section] { grid-column: span var(--_span, 12); }
+
+/* Masthead: the day and the workspace, and a greeting in the brand face, on the page background. */
+.le-masthead { display: flex; flex-direction: column; align-items: center; gap: var(--tb-space-2); padding: var(--tb-space-8) 0 var(--tb-space-4); text-align: center; }
+.le-masthead[hidden] { display: none; }
+.le-masthead-kicker { margin: 0; color: var(--tb-fg-muted); }
+.le-masthead-greeting { margin: 0; font-family: var(--tb-font-brand); font-size: calc(var(--tb-text-3xl) * 1.35); font-weight: var(--tb-weight-regular); line-height: var(--tb-leading-tight); color: var(--tb-fg); }
+
+/* Two ways to start: two cards side by side, each with a small drawing of the page it gives. */
+.le-start { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--tb-space-3); width: min(720px, 100%); margin: 0 auto; padding-bottom: var(--tb-space-10); }
+.le-start[hidden] { display: none; }
+.le-choice { display: flex; flex-direction: column; align-items: flex-start; gap: var(--tb-space-1); padding: var(--tb-space-4); font: inherit; color: var(--tb-fg); text-align: left; cursor: pointer; }
+.le-choice:focus-visible { outline: 2px solid var(--tb-border-focus); outline-offset: 2px; }
+.le-preview { display: block; width: 100%; height: auto; margin-bottom: var(--tb-space-3); }
+.le-p-fill { fill: var(--tb-bg-sunken); stroke: var(--tb-border); }
+.le-p-accent { fill: var(--tb-accent-soft); stroke: var(--tb-accent); }
+.le-p-hole { fill: none; stroke: var(--tb-border-strong); stroke-dasharray: 3 3; }
+.le-p-plus { stroke: var(--tb-fg-subtle); stroke-width: 1.5; stroke-linecap: round; }
+.le-choice-title { font-size: var(--tb-text-lg); font-weight: var(--tb-weight-semibold); }
+.le-choice-text { font-size: var(--tb-text-sm); color: var(--tb-fg-muted); }
+@media (max-width: 640px) {
+  .le-start { grid-template-columns: minmax(0, 1fr); }
+}
+
+.le-empty[hidden] { display: none; }
+.le-empty { padding: var(--tb-space-10) 0; }

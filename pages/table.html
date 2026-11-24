@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Accounts, Tabula templates</title>
+    <script>try { var s = localStorage, h = document.documentElement.classList; if (s.getItem('tb-theme') !== 'light') h.add('tb-dark'); if (s.getItem('tb-nav') === 'left') h.add('tb-nav-left'); if (s.getItem('tb-nav-collapsed') === '1') h.add('tb-nav-collapsed') } catch (e) {}</script>
+    <link rel="stylesheet" href="../src/tabula.css" />
+    <link rel="stylesheet" href="./shared/pages.css" />
+    <link rel="stylesheet" href="./table.css" />
+  </head>
+  <body>
+    <header data-shell></header>
+
+    <div class="tb-page tb-page--fit">
+      <div class="tb-page-toolbar">
+        <h1 class="tb-page-title">Accounts</h1>
+        <div class="tb-page-context">
+          <span class="tb-tag tb-tag--minimal" id="dt-context"></span>
+        </div>
+        <span class="tb-spacer"></span>
+        <div class="tb-page-actions">
+          <button class="tb-button tb-button--minimal tb-button--icon" type="button" id="dt-keys-open" aria-label="Keyboard shortcuts" data-tb-tooltip="Keyboard shortcuts (?)">
+            <svg class="tb-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 8h.01" /><path d="M12 12h.01" /><path d="M14 8h.01" /><path d="M16 12h.01" /><path d="M18 8h.01" /><path d="M6 8h.01" /><path d="M7 16h10" /><path d="M8 12h.01" /><rect width="20" height="16" x="2" y="4" rx="2" /></svg>
+          </button>
+          <button class="tb-button" type="button" id="dt-rail-toggle" data-tb-tooltip="Show or hide the filters (F)">
+            <svg class="tb-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 5h20" /><path d="M6 12h12" /><path d="M9 19h6" /></svg>
+            <span id="dt-rail-label">Hide filters</span>
+          </button>
+          <button class="tb-button tb-button--primary" type="button" id="dt-add-open">
+            <svg class="tb-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12" /><path d="m17 8-5-5-5 5" /><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /></svg>
+            Add data
+          </button>
+        </div>
+      </div>
+
+      <main class="tb-page-main dt-main" id="dt-main">
+        <aside class="tb-card dt-rail" aria-labelledby="dt-rail-title">
+          <div class="tb-card-header">
+            <h2 class="tb-card-title" id="dt-rail-title">Filters</h2>
+            <div class="tb-card-actions">
+              <button class="tb-button tb-button--minimal tb-button--sm" type="button" id="dt-reset">Reset</button>
+            </div>
+          </div>
+          <div class="tb-filter-rail dt-pane-scroll" id="dt-rail"></div>
+        </aside>
+
+        <div class="dt-center">
+          <section class="tb-card tb-stat-strip dt-summary" aria-label="Summary" id="dt-summary"></section>
+
+          <section class="tb-card dt-table-card" aria-labelledby="dt-table-title">
+            <div class="tb-card-header">
+              <h2 class="tb-card-title" id="dt-table-title">Accounts</h2>
+              <span class="tb-text tb-text--sm tb-text--muted tb-num" id="dt-count"></span>
+              <div class="tb-card-actions">
+                <div class="tb-toolbar-group" id="dt-bulk" hidden>
+                  <span class="tb-text tb-text--sm tb-num" id="dt-bulk-count"></span>
+                  <div class="tb-dropdown">
+                    <button class="tb-button tb-button--sm" type="button" data-tb-dropdown id="dt-bulk-owner">
+                      Assign owner
+                      <svg class="tb-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+                    </button>
+                    <div class="tb-popover tb-popover--end"><div class="tb-menu" role="menu" id="dt-owner-menu"></div></div>
+                  </div>
+                  <button class="tb-button tb-button--sm" type="button" id="dt-bulk-export">Export</button>
+                  <button class="tb-button tb-button--minimal tb-button--sm tb-button--icon" type="button" id="dt-bulk-clear" aria-label="Clear the selection" data-tb-tooltip="Clear the selection (Esc)">
+                    <svg class="tb-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+                  </button>
+                  <span class="tb-divider tb-divider--vertical"></span>
+                </div>
+                <div class="tb-input-group tb-search" data-tb-search>
+                  <svg class="tb-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 21-4.34-4.34" /><circle cx="11" cy="11" r="8" /></svg>
+                  <input class="tb-input" type="search" id="dt-search" placeholder="Search name, ID, contact" aria-label="Search accounts" autocomplete="off" />
+                  <button class="tb-button tb-button--minimal tb-button--icon tb-search-clear" type="button" aria-label="Clear the search" data-tb-search-clear>
+                    <svg class="tb-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="tb-card-body tb-card-body--flush dt-table-body">
+              <div class="tb-table-wrap dt-wrap" id="dt-wrap">
+                <table class="tb-table dt-table" id="dt-table">
+                  <colgroup>
+                    <col class="dt-col-check" /><col class="dt-col-name" /><col class="dt-col-status" /><col class="dt-col-risk" /><col class="dt-col-money" /><col class="dt-col-spark" />
+                    <col class="dt-col-change" /><col class="dt-col-orders" /><col class="dt-col-date" /><col class="dt-col-cc" /><col class="dt-col-seg" /><col class="dt-col-owner" />
+                  </colgroup>
+                  <thead>
+                    <tr>
+                      <th class="dt-check-cell"><label class="tb-checkbox"><input type="checkbox" id="dt-check-all" aria-label="Select every account shown" /><span></span></label></th>
+                      <th data-tb-sort data-dt-sort="name">Account</th>
+                      <th data-tb-sort data-dt-sort="status">Status</th>
+                      <th class="is-num" data-tb-sort="desc" data-dt-sort="risk">Churn risk</th>
+                      <th class="is-num" data-tb-sort="desc" data-dt-sort="revenue">Revenue</th>
+                      <th>12 months</th>
+                      <th class="is-num" data-tb-sort="desc" data-dt-sort="change">Change</th>
+                      <th class="is-num" data-tb-sort="desc" data-dt-sort="orders">Orders</th>
+                      <th data-tb-sort="desc" data-dt-sort="last">Last order</th>
+                      <th data-tb-sort data-dt-sort="country">Country</th>
+                      <th data-tb-sort data-dt-sort="segment">Segment</th>
+                      <th data-tb-sort data-dt-sort="owner">Owner</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dt-rows"></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <aside class="tb-card dt-detail" aria-labelledby="dt-detail-title">
+          <div class="tb-card-header">
+            <h2 class="tb-card-title" id="dt-detail-title">Account</h2>
+            <div class="tb-card-actions">
+              <span class="tb-text tb-text--sm tb-text--muted tb-num" id="dt-pos"></span>
+              <button class="tb-button tb-button--minimal tb-button--sm tb-button--icon" type="button" data-move="-1" aria-label="Previous account" data-tb-tooltip="Previous (K)">
+                <svg class="tb-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m18 15-6-6-6 6" /></svg>
+              </button>
+              <button class="tb-button tb-button--minimal tb-button--sm tb-button--icon" type="button" data-move="1" aria-label="Next account" data-tb-tooltip="Next (J)">
+                <svg class="tb-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+              </button>
+            </div>
+          </div>
+          <div class="dt-pane-scroll" id="dt-detail"></div>
+          <div class="tb-card-footer" id="dt-detail-foot" hidden></div>
+        </aside>
+      </main>
+    </div>
+
+    <!-- Add data: drop files of accounts; each row imports with its own progress. -->
+    <div class="tb-dialog-backdrop" id="dt-add">
+      <div class="tb-dialog tb-dialog--lg" role="dialog" aria-modal="true" aria-labelledby="dt-add-title">
+        <div class="tb-dialog-header">
+          <h2 class="tb-dialog-title" id="dt-add-title">Add accounts</h2>
+          <button class="tb-button tb-button--minimal tb-button--sm tb-button--icon" type="button" data-tb-dialog-close aria-label="Close">
+            <svg class="tb-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+          </button>
+        </div>
+        <div class="tb-dialog-body tb-stack">
+          <p class="tb-text">Each line of a CSV file becomes an account, named after its first column. Other files are listed but left out.</p>
+          <label class="tb-field dt-add-owner">
+            <span class="tb-field-label">Owner of the new accounts</span>
+            <select class="tb-select" id="dt-add-owner"></select>
+          </label>
+          <div class="dt-drop" id="dt-drop" role="button" tabindex="0" aria-describedby="dt-drop-types">
+            <svg class="tb-icon dt-drop-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 13v8" /><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" /><path d="m8 17 4-4 4 4" /></svg>
+            <span class="dt-drop-title">Drop files here, or browse</span>
+            <span class="tb-text tb-text--sm tb-text--muted" id="dt-drop-types">.csv, up to 200 lines each</span>
+            <button class="tb-button tb-button--minimal tb-button--sm" type="button" id="dt-sample">Use a sample file</button>
+            <input type="file" id="dt-file" multiple hidden />
+          </div>
+          <div id="dt-staged"></div>
+        </div>
+        <div class="tb-dialog-footer">
+          <span class="tb-text tb-text--sm tb-text--muted dt-add-note" id="dt-add-note"></span>
+          <button class="tb-button" type="button" data-tb-dialog-close>Cancel</button>
+          <button class="tb-button tb-button--primary" type="button" id="dt-add-confirm" disabled>Add accounts</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Keyboard shortcuts -->
+    <div class="tb-dialog-backdrop" id="dt-keys">
+      <div class="tb-dialog tb-dialog--sm" role="dialog" aria-modal="true" aria-labelledby="dt-keys-title">
+        <div class="tb-dialog-header">
+          <h2 class="tb-dialog-title" id="dt-keys-title">Keyboard shortcuts</h2>
+          <button class="tb-button tb-button--minimal tb-button--sm tb-button--icon" type="button" data-tb-dialog-close aria-label="Close">
+            <svg class="tb-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+          </button>
+        </div>
+        <div class="tb-dialog-body"><dl class="tb-dl dt-keys" id="dt-keys-list"></dl></div>
+      </div>
+    </div>
+
+    <script type="module" src="./table.js"></script>
+  </body>
+</html>

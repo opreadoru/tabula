@@ -1,0 +1,150 @@
+/* Data table template, prefix dt-. The three-pane grid, the table columns, the row progress and
+   the drop zone. The filter rail, stat strip, search, table, timeline and dialog are system
+   components. */
+
+/* Three panes: filters, the list, the selected account. From 1181px the page is fitted
+   (tb-page--fit): it never scrolls, the panes fill the window, and each scrolls on its own, side by
+   side, never one inside another. Narrower, the page scrolls and the rail and detail stick. */
+.dt-main {
+  --dt-top: calc(var(--tb-space-12) + var(--tb-space-3));
+  --dt-rail-w: 216px;
+  --dt-detail-w: 340px;
+  display: grid;
+  grid-template-columns: var(--dt-rail-w) minmax(0, 1fr) var(--dt-detail-w);
+  align-items: start;
+}
+.tb-nav-left .dt-main { --dt-top: var(--tb-space-3); }
+.dt-main.is-rail-hidden { grid-template-columns: minmax(0, 1fr) var(--dt-detail-w); }
+.dt-main.is-rail-hidden .dt-rail { display: none; }
+
+.dt-rail, .dt-detail {
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: var(--dt-top);
+  max-height: calc(100vh - var(--dt-top) - var(--tb-space-3));
+  overflow: hidden;
+}
+.dt-pane-scroll { flex: 1; min-height: 0; overflow: hidden auto; scrollbar-gutter: stable; }
+.dt-center { display: flex; flex-direction: column; gap: var(--tb-space-3); min-width: 0; }
+.dt-table-card .tb-card-header { flex-wrap: wrap; row-gap: var(--tb-space-1); }
+.dt-table-card .tb-card-title { flex: none; }
+.dt-wrap { max-height: max(360px, calc(100vh - 300px)); }
+
+@media (min-width: 1181px) {
+  .dt-main { grid-template-rows: minmax(0, 1fr); align-items: stretch; height: 100%; }
+  .dt-main :is(.dt-rail, .dt-detail) { position: static; max-height: none; min-height: 0; }
+  .dt-center { min-height: 0; }
+  .dt-table-card { display: flex; flex: 1; flex-direction: column; min-height: 0; }
+  .dt-table-body { display: flex; flex: 1; flex-direction: column; min-height: 0; }
+  .dt-wrap { flex: 1; min-height: 0; max-height: none; }
+}
+@media (max-width: 1180px) {
+  .dt-main, .dt-main.is-rail-hidden { grid-template-columns: var(--dt-rail-w) minmax(0, 1fr); }
+  .dt-main.is-rail-hidden { grid-template-columns: minmax(0, 1fr); }
+  .dt-detail { position: static; grid-column: -2 / -1; max-height: none; }
+}
+
+/* Summary strip */
+.dt-summary.tb-stat-strip { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+/* Table */
+.dt-table { table-layout: fixed; width: 1128px; }
+/* The list's own columns scroll sideways inside the card when the panes leave too little room;
+   the account, its status and its risk come first so they stay in view. */
+.dt-table th, .dt-table td { padding: 0 var(--tb-space-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dt-table th:first-child, .dt-table td:first-child { padding-left: var(--tb-space-3); }
+.dt-col-check { width: 36px; }
+.dt-col-name { width: 220px; }
+.dt-col-status { width: 96px; }
+.dt-col-risk { width: 108px; }
+.dt-col-money { width: 100px; }
+.dt-col-spark { width: 84px; }
+.dt-col-change { width: 72px; }
+.dt-col-orders { width: 64px; }
+.dt-col-date { width: 80px; }
+.dt-col-cc { width: 64px; }
+.dt-col-seg { width: 96px; }
+.dt-col-owner { width: 88px; }
+.dt-table tbody tr[data-id] { cursor: pointer; }
+.dt-table tbody tr.is-checked:not(.is-selected) { background: color-mix(in oklab, var(--tb-bg-selected) 45%, transparent); }
+.dt-table tbody tr[data-id]:focus { outline: none; }
+.dt-table tbody tr[data-id]:focus-visible { box-shadow: inset 2px 0 0 var(--tb-border-focus); }
+.dt-table tbody tr.is-selected > td:first-child { box-shadow: inset 2px 0 0 var(--tb-accent); }
+.dt-check-cell .tb-checkbox { display: flex; min-height: var(--_table-row); }
+.dt-name { font-weight: var(--tb-weight-medium); }
+.dt-id { margin-left: var(--tb-space-1); font-size: var(--tb-text-xs); color: var(--tb-fg-subtle); }
+.dt-spark-cell svg { display: block; }
+.dt-table .tb-prob-bar { width: var(--tb-space-8); }
+.dt-empty-row:hover, .dt-skeleton-row:hover { background: none; }
+.dt-empty-row td { height: auto; white-space: normal; }
+.dt-skeleton-row .tb-skeleton { height: 10px; min-height: 0; }
+.dt-flash > td { animation: dt-flash 1.2s var(--tb-ease); }
+@keyframes dt-flash { from { background: var(--tb-accent-soft); } to { background: transparent; } }
+
+/* A row being imported: its status cell is a progress bar and a share. */
+.dt-importing { display: inline-flex; align-items: center; gap: var(--tb-space-2); width: 100%; }
+.dt-importing > .tb-progress { flex: 1; }
+.dt-importing > .tb-num { min-width: 3.2em; color: var(--tb-fg-muted); text-align: right; }
+.dt-table tr.is-importing td:not(:first-child, :last-child) { color: var(--tb-fg-subtle); }
+
+/* Detail pane */
+.dt-detail-inner { display: flex; flex-direction: column; gap: var(--tb-space-4); padding: var(--tb-space-4); }
+.dt-detail-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--tb-space-2); }
+.dt-detail-name { margin: 0; font-size: var(--tb-text-lg); font-weight: var(--tb-weight-semibold); line-height: var(--tb-leading-tight); }
+.dt-figures { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; background: var(--tb-border); border: var(--tb-border-width) solid var(--tb-border); border-radius: var(--tb-radius-md); overflow: hidden; }
+.dt-figures > .tb-stat { background: var(--tb-bg-surface); padding: var(--tb-space-2) var(--tb-space-3); }
+.dt-products { display: flex; flex-wrap: wrap; gap: var(--tb-space-1); }
+.dt-detail .tb-card-footer { justify-content: space-between; }
+
+/* Keys */
+.dt-kbd {
+  display: inline-grid;
+  place-items: center;
+  min-width: var(--tb-space-4);
+  height: var(--tb-space-4);
+  padding: 0 var(--tb-space-1);
+  font-family: var(--tb-font-mono);
+  font-size: var(--tb-text-xs);
+  color: var(--tb-fg-muted);
+  background: var(--tb-bg-sunken);
+  border: var(--tb-border-width) solid var(--tb-border);
+  border-radius: var(--tb-radius-sm);
+}
+.dt-keys { grid-template-columns: max-content minmax(0, 1fr); }
+
+/* Add data */
+.dt-add-owner { max-width: 280px; }
+.dt-drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--tb-space-1);
+  padding: var(--tb-space-6) var(--tb-space-4);
+  text-align: center;
+  background: var(--tb-bg-sunken);
+  border: calc(var(--tb-border-width) * 1.5) dashed var(--tb-border-strong);
+  border-radius: var(--tb-radius-lg);
+  cursor: pointer;
+}
+.dt-drop:hover { border-color: var(--tb-fg-subtle); }
+.dt-drop:focus-visible { outline: 2px solid var(--tb-border-focus); outline-offset: 2px; }
+.dt-drop.is-over { background: var(--tb-accent-soft); border-color: var(--tb-accent); }
+.dt-drop-icon { width: var(--tb-space-6); height: var(--tb-space-6); color: var(--tb-fg-muted); }
+.dt-drop-title { font-weight: var(--tb-weight-medium); }
+.dt-staged-wrap { max-height: 220px; }
+.dt-staged tr.is-muted { opacity: var(--tb-opacity-disabled); }
+.dt-add-note { margin-right: auto; }
+.dt-main.is-drop-target { outline: 2px dashed var(--tb-accent); outline-offset: -6px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .dt-flash > td { animation: none; }
+}
+
+/* Rail: the revenue histogram */
+.dt-hist { display: block; width: 100%; height: auto; margin-top: var(--tb-space-1); overflow: visible; }
+.dt-bar { cursor: pointer; }
+.dt-bar:hover rect:last-of-type { fill: var(--tb-accent-hover); }
+.dt-bar:focus { outline: none; }
+.dt-bar:focus-visible rect:first-of-type { stroke: var(--tb-border-focus); stroke-width: 2; }
+.dt-hist-tick { font-size: var(--tb-text-xs); fill: var(--tb-fg-muted); font-variant-numeric: tabular-nums; }

@@ -1,0 +1,805 @@
+/* Tabula patterns. Avatar, description list, stat and stat strip, chip group, breadcrumbs,
+   toolbar and search, filter rail, list, legend, swatch and share bar. Each one was rebuilt on
+   several product pages before it came here, so each covers every use found there.
+   Every value reads from tokens.css. Private variables start with --_ and belong to one element.
+   Public inputs set inline are --value (0 to 100), --tone (a colour token) and --label-width. */
+
+/* ------------------------------------------------------------------------------------------
+   Small shared helpers
+   ------------------------------------------------------------------------------------------ */
+
+/* Pushes what follows it to the far end of a flex row. */
+.tb-spacer { flex: 1 1 auto; }
+
+/* A vertical divider in a row of controls gets a fixed height, since the row centres its items. */
+:is(.tb-toolbar, .tb-toolbar-group, .tb-page-toolbar, .tb-page-actions) > .tb-divider--vertical {
+  align-self: center;
+  height: var(--tb-space-4);
+  margin: 0 var(--tb-space-1);
+}
+
+/* Theme switches for content that differs by theme, such as a sun or a moon icon. */
+.tb-dark-only { display: none; }
+.tb-dark .tb-dark-only { display: inline-block; }
+.tb-dark .tb-light-only { display: none; }
+
+/* ------------------------------------------------------------------------------------------
+   Avatar. Initials of a person, or an icon for the assistant or a file.
+   ------------------------------------------------------------------------------------------ */
+
+.tb-avatar {
+  --_avatar-size: var(--tb-control-md);
+  box-sizing: border-box;
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: var(--_avatar-size);
+  height: var(--_avatar-size);
+  overflow: hidden;
+  font-size: var(--tb-text-xs);
+  font-weight: var(--tb-weight-semibold);
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--tb-fg-on-accent);
+  vertical-align: middle;
+  background: var(--tb-accent);
+  border-radius: var(--tb-radius-md);
+  user-select: none;
+}
+.tb-avatar > .tb-icon { width: var(--tb-space-4); height: var(--tb-space-4); }
+
+.tb-avatar--sm { --_avatar-size: var(--tb-control-sm); border-radius: var(--tb-radius-sm); }
+.tb-avatar--sm > .tb-icon { width: 14px; height: 14px; }
+.tb-avatar--lg { --_avatar-size: var(--tb-control-lg); font-size: var(--tb-text-sm); }
+
+.tb-avatar--neutral {
+  color: var(--tb-fg-muted);
+  background: var(--tb-bg-sunken);
+  box-shadow: inset 0 0 0 var(--tb-border-width) var(--tb-border);
+}
+/* Initials stay at full contrast on the neutral fill; only an icon goes muted. */
+.tb-avatar--neutral:not(:has(> .tb-icon)) { color: var(--tb-fg); }
+.tb-avatar--ai { color: var(--tb-ai); background: var(--tb-ai-soft); }
+
+/* ------------------------------------------------------------------------------------------
+   Description list. Label on the left, muted, value on the right.
+   ------------------------------------------------------------------------------------------ */
+
+.tb-dl {
+  display: grid;
+  grid-template-columns: var(--label-width, max-content) minmax(0, 1fr);
+  align-items: baseline;
+  gap: var(--tb-space-2) var(--tb-space-4);
+  margin: 0;
+  font-size: var(--tb-text-md);
+}
+.tb-dl > dt,
+.tb-dl > div > dt {
+  min-width: 0;
+  color: var(--tb-fg-muted);
+}
+.tb-dl > dd,
+.tb-dl > div > dd {
+  min-width: 0;
+  margin: 0;
+  text-align: right;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+/* A pair may be wrapped in a div, which HTML allows; the grid sees through it. */
+.tb-dl > div { display: contents; }
+
+/* A second, quieter line under a value: an IBAN under a name, a rule under a slice. */
+.tb-dl-sub {
+  display: block;
+  font-size: var(--tb-text-sm);
+  color: var(--tb-fg-muted);
+}
+
+.tb-dl--dense { gap: var(--tb-space-1) var(--tb-space-3); }
+
+/* Values start under each other on the left. Use with --label-width so labels line up
+   across several lists in one panel. */
+.tb-dl--start > dd,
+.tb-dl--start > div > dd { text-align: left; }
+
+/* Stacked: the label sits above its value, and the pairs flow in a row. Wrap each pair in a div. */
+.tb-dl--stacked {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tb-space-3) var(--tb-space-8);
+}
+.tb-dl--stacked > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.tb-dl--stacked > div > dt { font-size: var(--tb-text-xs); }
+.tb-dl--stacked > div > dd { font-size: var(--tb-text-sm); text-align: left; }
+.tb-dl--stacked.tb-dl--dense { gap: var(--tb-space-2) var(--tb-space-5); }
+
+/* ------------------------------------------------------------------------------------------
+   Stat and stat strip. A key figure: caps label, big number, a line under it.
+   ------------------------------------------------------------------------------------------ */
+
+.tb-stat {
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  /* Stats of different heights in one strip keep their labels on the same line. */
+  align-content: start;
+  gap: var(--tb-space-1) 0;
+  min-width: 0;
+  margin: 0;
+  padding: var(--tb-space-3) var(--tb-space-4);
+  font: inherit;
+  color: var(--tb-fg);
+  text-align: left;
+  background: none;
+  border: 0;
+}
+/* Everything but the value and its sparkline takes the full width. */
+.tb-stat > :not(.tb-stat-value, .tb-stat-spark) { grid-column: 1 / -1; }
+
+.tb-stat-label {
+  display: flex;
+  align-items: center;
+  gap: var(--tb-space-1);
+  min-width: 0;
+  font-size: var(--tb-text-sm);
+  font-weight: var(--tb-weight-medium);
+  line-height: var(--tb-leading-tight);
+  color: var(--tb-fg-muted);
+}
+.tb-stat-label > .tb-icon { width: var(--tb-space-3); height: var(--tb-space-3); }
+
+.tb-stat-value {
+  grid-column: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: var(--tb-text-xl);
+  font-weight: var(--tb-weight-semibold);
+  line-height: var(--tb-leading-tight);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
+}
+.tb-stat-spark {
+  grid-column: 2;
+  display: flex;
+  justify-content: flex-end;
+  margin-left: var(--tb-space-3);
+  color: var(--tb-accent);
+}
+.tb-stat-spark > svg { display: block; overflow: visible; }
+
+.tb-stat-sub {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tb-space-1) var(--tb-space-2);
+  min-width: 0;
+  font-size: var(--tb-text-sm);
+  line-height: var(--tb-leading-tight);
+  color: var(--tb-fg-muted);
+}
+
+/* Change against a previous period. The icon gives the direction, the tone says whether the
+   change is good or bad for the analyst; a rise in fraud is bad, a rise in labelled rows good. */
+.tb-stat-delta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tb-space-1);
+  font-weight: var(--tb-weight-semibold);
+  white-space: nowrap;
+  color: var(--tb-fg);
+  font-variant-numeric: tabular-nums;
+}
+.tb-stat-delta > .tb-icon { width: var(--tb-space-3); height: var(--tb-space-3); }
+.tb-stat-delta--good { color: var(--tb-success); }
+.tb-stat-delta--bad { color: var(--tb-danger); }
+
+.tb-stat--lg .tb-stat-value { font-size: var(--tb-text-2xl); }
+.tb-stat--danger .tb-stat-value { color: var(--tb-danger); }
+
+/* A stat standing alone in a grid of figures, on a sunken tile. */
+.tb-stat--tile {
+  padding: var(--tb-space-3);
+  background: var(--tb-bg-sunken);
+  border-radius: var(--tb-radius-sm);
+}
+
+/* A stat that filters the view below it is a button. It must read as one before the pointer finds
+   it: its label takes the link colour, and it carries an icon saying what it does. The one in use
+   is marked like an active tab, with the accent line along its bottom edge. */
+:is(button, a).tb-stat {
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color var(--tb-duration-fast) var(--tb-ease), box-shadow var(--tb-duration-fast) var(--tb-ease);
+}
+:is(button, a).tb-stat .tb-stat-label { color: var(--tb-fg-link); }
+:is(button, a).tb-stat:hover { background-color: var(--tb-bg-hover); }
+:is(button, a).tb-stat:is([aria-pressed="true"], .is-active) {
+  background-color: var(--tb-bg-selected);
+  box-shadow: inset 0 -2px 0 var(--tb-accent);
+}
+:is(button, a).tb-stat:focus-visible {
+  outline: 2px solid var(--tb-border-focus);
+  outline-offset: -2px;
+}
+
+/* Strip: stats side by side in equal columns, a rule between each. Put it on a card or inside
+   a flush card body. */
+.tb-stat-strip {
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  align-items: stretch;
+  min-width: 0;
+}
+.tb-stat-strip > * + * { border-left: var(--tb-border-width) solid var(--tb-border); }
+
+/* ------------------------------------------------------------------------------------------
+   Chip group. A wrapping row of tags or filter chips, with an optional caps label first.
+   The chips themselves are tb-tag, and tb-tag--interactive when they toggle.
+   ------------------------------------------------------------------------------------------ */
+
+.tb-chip-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tb-space-1);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.tb-chip-group-label {
+  flex: none;
+  margin-right: var(--tb-space-1);
+  font-size: var(--tb-text-sm);
+  font-weight: var(--tb-weight-medium);
+  color: var(--tb-fg-muted);
+}
+.tb-chip-group--loose { gap: var(--tb-space-2); }
+
+/* Parts a chip may hold: a label that truncates, and a count after it. */
+.tb-tag-text {
+  min-width: 0;
+  overflow: hidden;
+  line-height: var(--tb-leading-tight);
+  text-overflow: ellipsis;
+}
+.tb-tag-count {
+  margin-left: var(--tb-space-1);
+  font-weight: var(--tb-weight-regular);
+  color: var(--tb-fg-muted);
+  font-variant-numeric: tabular-nums;
+}
+.tb-tag--interactive:is([aria-pressed="true"], .is-active) .tb-tag-count { color: inherit; }
+.tb-tag.is-zero { color: var(--tb-fg-subtle); }
+
+/* ------------------------------------------------------------------------------------------
+   Breadcrumbs. Where the analyst is in the tree: each level a link, the last one current.
+   ------------------------------------------------------------------------------------------ */
+
+.tb-breadcrumbs { min-width: 0; }
+.tb-breadcrumbs > ol {
+  display: flex;
+  align-items: center;
+  gap: var(--tb-space-1);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.tb-breadcrumbs li {
+  display: flex;
+  flex: 0 1 auto;
+  align-items: center;
+  gap: var(--tb-space-1);
+  min-width: 0;
+}
+/* The current level shrinks last, so the analyst keeps reading where they are. */
+.tb-breadcrumbs li:last-child { flex-shrink: 0; max-width: 60%; }
+/* The chevron between levels, drawn in CSS so the markup stays one element per level. */
+.tb-breadcrumbs li + li::before {
+  content: "";
+  flex: none;
+  width: 5px;
+  height: 5px;
+  margin: 0 var(--tb-space-1) 0 0;
+  border-top: calc(var(--tb-border-width) * 1.5) solid var(--tb-fg-subtle);
+  border-right: calc(var(--tb-border-width) * 1.5) solid var(--tb-fg-subtle);
+  transform: rotate(45deg);
+}
+
+.tb-breadcrumb {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  margin: 0;
+  padding: 2px var(--tb-space-1);
+  overflow: hidden;
+  font: inherit;
+  text-align: left;
+  font-size: var(--tb-text-sm);
+  line-height: var(--tb-leading-tight);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  text-decoration: none;
+  color: var(--tb-fg-muted);
+  background: none;
+  border: 0;
+  border-radius: var(--tb-radius-sm);
+}
+:is(a, button).tb-breadcrumb { cursor: pointer; }
+:is(a, button).tb-breadcrumb:hover {
+  color: var(--tb-fg);
+  text-decoration: none;
+  background: var(--tb-bg-hover);
+}
+.tb-breadcrumb:focus-visible {
+  outline: 2px solid var(--tb-border-focus);
+  outline-offset: 1px;
+}
+.tb-breadcrumb[aria-current]:not([aria-current="false"]) {
+  font-weight: var(--tb-weight-semibold);
+  color: var(--tb-fg);
+  background: none;
+  cursor: default;
+}
+/* The first level sits flush with the text above it; its width gains back the pulled margin. */
+.tb-breadcrumbs li:first-child > .tb-breadcrumb { margin-left: calc(var(--tb-space-1) * -1); max-width: calc(100% + var(--tb-space-1)); }
+
+/* Wrap: long paths break onto more lines and nothing is cut. Use in a narrow side panel. */
+.tb-breadcrumbs--wrap > ol { flex-wrap: wrap; }
+.tb-breadcrumbs--wrap li:last-child { max-width: 100%; }
+.tb-breadcrumbs--wrap .tb-breadcrumb { white-space: normal; overflow-wrap: anywhere; }
+
+/* ------------------------------------------------------------------------------------------
+   Toolbar and search
+   ------------------------------------------------------------------------------------------ */
+
+.tb-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tb-space-2);
+  min-width: 0;
+}
+/* Straight inside a card, between its header and its body, the toolbar is its own band. */
+.tb-card > .tb-toolbar {
+  padding: var(--tb-space-2) var(--tb-space-3);
+  border-bottom: var(--tb-border-width) solid var(--tb-border);
+}
+.tb-toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: var(--tb-space-1);
+  min-width: 0;
+}
+.tb-toolbar-count {
+  font-size: var(--tb-text-sm);
+  white-space: nowrap;
+  color: var(--tb-fg-muted);
+  font-variant-numeric: tabular-nums;
+}
+.tb-toolbar .tb-select { width: auto; }
+
+/* Search: an input group with a search icon and a clear button. The clear button shows only
+   when the field has text, which needs a placeholder on the input. */
+.tb-search {
+  width: 240px;
+  max-width: 100%;
+}
+.tb-search--block { width: 100%; }
+.tb-search > .tb-input::-webkit-search-cancel-button,
+.tb-search > .tb-input::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
+}
+.tb-search:has(> .tb-input:placeholder-shown) > .tb-search-clear,
+.tb-search > .tb-search-clear[hidden] {
+  display: none;
+}
+
+/* ------------------------------------------------------------------------------------------
+   Filter rail. A column of filter groups, each a caps title and a list of options.
+   ------------------------------------------------------------------------------------------ */
+
+.tb-filter-rail {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.tb-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-1);
+  min-width: 0;
+  margin: 0;
+  padding: var(--tb-space-2) var(--tb-space-3) var(--tb-space-3);
+  border: 0;
+  border-bottom: var(--tb-border-width) solid var(--tb-border);
+}
+.tb-filter-group:last-child { border-bottom: 0; }
+.tb-filter-group-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--tb-space-2);
+  min-height: var(--tb-control-sm);
+}
+.tb-filter-group-title {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  font-size: var(--tb-text-sm);
+  font-weight: var(--tb-weight-medium);
+  line-height: var(--tb-leading-tight);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--tb-fg-muted);
+}
+/* Reset sits on the right of the title, a minimal small button pulled to the edge. */
+.tb-filter-reset { margin-right: calc(var(--tb-space-2) * -1); }
+.tb-filter-reset[hidden] { display: none; }
+.tb-filter-group > .tb-select,
+.tb-filter-group > .tb-input,
+.tb-filter-group > .tb-search { width: 100%; }
+
+/* An option is a tb-checkbox or tb-radio that takes the full width, name left, count right. */
+.tb-filter-option {
+  display: flex;
+  width: 100%;
+  min-height: var(--tb-control-sm);
+}
+.tb-filter-option > input + span { flex: 1; min-width: 0; }
+.tb-filter-option-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.tb-filter-option-count {
+  flex: none;
+  margin-left: auto;
+  font-size: var(--tb-text-sm);
+  color: var(--tb-fg-muted);
+  font-variant-numeric: tabular-nums;
+}
+.tb-filter-option.is-zero .tb-filter-option-name { color: var(--tb-fg-subtle); }
+
+/* ------------------------------------------------------------------------------------------
+   List. Rows with a leading slot, a title, a meta line and a trailing slot.
+   ------------------------------------------------------------------------------------------ */
+
+.tb-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  margin: 0;
+  padding: var(--tb-space-1);
+  list-style: none;
+}
+.tb-list > li:not(.tb-list-item) { display: contents; }
+
+.tb-list-item {
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: var(--tb-space-3);
+  width: 100%;
+  min-width: 0;
+  min-height: var(--tb-control-lg);
+  margin: 0;
+  padding: var(--tb-space-2) var(--tb-space-3);
+  font: inherit;
+  color: var(--tb-fg);
+  text-align: left;
+  text-decoration: none;
+  background: none;
+  border: 0;
+  border-radius: var(--tb-radius-sm);
+}
+.tb-list-item-leading {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  color: var(--tb-fg-muted);
+}
+.tb-list-item-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.tb-list-item-title {
+  min-width: 0;
+  overflow: hidden;
+  font-weight: var(--tb-weight-medium);
+  line-height: var(--tb-leading-tight);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.tb-list-item-meta {
+  min-width: 0;
+  overflow: hidden;
+  font-size: var(--tb-text-sm);
+  line-height: var(--tb-leading-tight);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--tb-fg-muted);
+}
+.tb-list-item-trailing {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--tb-space-1);
+  font-size: var(--tb-text-sm);
+  color: var(--tb-fg-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The link inside a row stretches over the whole row, so the row is one click target and the
+   trailing buttons stay separate buttons above it. */
+.tb-list-item-link {
+  color: inherit;
+  text-decoration: none;
+  margin: 0;
+  padding: 0;
+  font: inherit;
+  text-align: left;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.tb-list-item-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+.tb-list-item-link:hover { text-decoration: none; }
+.tb-list-item-link:focus-visible { outline: none; }
+.tb-list-item:has(.tb-list-item-link:focus-visible) {
+  outline: 2px solid var(--tb-border-focus);
+  outline-offset: -2px;
+}
+
+/* Hover and selection, on rows that are themselves a button or a link, or hold one. */
+:is(button, a).tb-list-item,
+.tb-list-item:has(.tb-list-item-link) { cursor: pointer; }
+:is(button, a).tb-list-item:hover:not(:disabled),
+.tb-list-item:has(.tb-list-item-link):hover { background: var(--tb-bg-hover); }
+:is(button, a).tb-list-item:focus-visible {
+  outline: 2px solid var(--tb-border-focus);
+  outline-offset: -2px;
+}
+.tb-list-item:is(.is-selected, [aria-selected="true"], [aria-current]:not([aria-current="false"])),
+.tb-list-item:is(.is-selected, [aria-selected="true"], [aria-current]:not([aria-current="false"])):hover {
+  background: var(--tb-bg-selected);
+}
+.tb-list-item:is(.is-selected, [aria-selected="true"], [aria-current]:not([aria-current="false"])) .tb-list-item-title {
+  color: var(--tb-fg-link);
+}
+.tb-list-item:disabled,
+.tb-list-item.is-disabled {
+  cursor: default;
+  opacity: var(--tb-opacity-disabled);
+}
+
+/* Controls that show only on hover or focus, such as a pin. They stay when pressed. */
+.tb-list-item-reveal { opacity: 0; }
+.tb-list-item:hover .tb-list-item-reveal,
+.tb-list-item:focus-within .tb-list-item-reveal,
+.tb-list-item-reveal[aria-pressed="true"] { opacity: 1; }
+
+/* Divided: rows run edge to edge with a rule between them, for a list inside a flush card body. */
+.tb-list--divided { gap: 0; padding: 0; }
+.tb-list--divided .tb-list-item {
+  padding: var(--tb-space-2) var(--tb-space-4);
+  border-radius: 0;
+  box-shadow: inset 0 calc(var(--tb-border-width) * -1) 0 var(--tb-border);
+}
+.tb-list--divided > :last-child.tb-list-item,
+.tb-list--divided > li:last-child > .tb-list-item { box-shadow: none; }
+
+/* Dense: one-line rows at control height, for entity pickers and baskets. */
+.tb-list--dense .tb-list-item {
+  gap: var(--tb-space-2);
+  min-height: var(--tb-control-md);
+  padding-top: var(--tb-space-1);
+  padding-bottom: var(--tb-space-1);
+}
+.tb-list--dense:not(.tb-list--divided) .tb-list-item { padding-left: var(--tb-space-2); padding-right: var(--tb-space-2); }
+
+/* ------------------------------------------------------------------------------------------
+   Swatch, legend and share bar
+   ------------------------------------------------------------------------------------------ */
+
+/* Swatch: the colour key of one series. Set the colour with --tone or a tone modifier. */
+.tb-swatch {
+  --_tone: var(--tone, var(--tb-fg-subtle));
+  display: inline-block;
+  flex: none;
+  width: var(--tb-space-2);
+  height: var(--tb-space-2);
+  vertical-align: middle;
+  background: var(--_tone);
+}
+.tb-swatch--dot { border-radius: var(--tb-radius-full); }
+.tb-swatch--line { width: var(--tb-space-3); height: 2px; }
+.tb-swatch--hollow {
+  background: transparent;
+  box-shadow: inset 0 0 0 calc(var(--tb-border-width) * 1.5) var(--_tone);
+}
+
+/* Tones, shared by swatch and bar */
+:is(.tb-swatch, .tb-bar).tb-tone-low { --_tone: var(--tb-prob-low); }
+:is(.tb-swatch, .tb-bar).tb-tone-mid { --_tone: var(--tb-prob-mid); }
+:is(.tb-swatch, .tb-bar).tb-tone-high { --_tone: var(--tb-prob-high); }
+:is(.tb-swatch, .tb-bar).tb-tone-accent { --_tone: var(--tb-accent); }
+:is(.tb-swatch, .tb-bar).tb-tone-danger { --_tone: var(--tb-danger); }
+:is(.tb-swatch, .tb-bar).tb-tone-warning { --_tone: var(--tb-warning); }
+:is(.tb-swatch, .tb-bar).tb-tone-success { --_tone: var(--tb-success); }
+:is(.tb-swatch, .tb-bar).tb-tone-ai { --_tone: var(--tb-ai); }
+
+/* Legend: rows of swatch, label and up to two values. The rows share their columns, so the
+   values line up from one row to the next. */
+.tb-legend {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-content: start;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  font-size: var(--tb-text-sm);
+  list-style: none;
+}
+.tb-legend > li:not(.tb-legend-item) { display: contents; }
+.tb-legend-item {
+  box-sizing: border-box;
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  align-items: center;
+  column-gap: var(--tb-space-2);
+  min-height: var(--tb-control-sm);
+  margin: 0;
+  padding: 0 var(--tb-space-1);
+  font: inherit;
+  color: var(--tb-fg);
+  text-align: left;
+  background: none;
+  border: 0;
+  border-radius: var(--tb-radius-sm);
+}
+.tb-legend-item > .tb-swatch,
+.tb-legend-item > .tb-prob { grid-column: 1; }
+.tb-legend-label {
+  grid-column: 2;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.tb-legend-value {
+  min-width: 0;
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.tb-legend-value + .tb-legend-value { min-width: 5ch; color: var(--tb-fg-muted); }
+
+/* A legend row that filters its chart is a button. */
+button.tb-legend-item { cursor: pointer; }
+button.tb-legend-item:hover { background: var(--tb-bg-hover); }
+button.tb-legend-item:focus-visible {
+  outline: 2px solid var(--tb-border-focus);
+  outline-offset: -2px;
+}
+button.tb-legend-item:is([aria-pressed="true"], .is-active) {
+  color: var(--tb-fg-link);
+  background: var(--tb-bg-selected);
+}
+
+/* Inline: a key under or beside a chart, items in a wrapping row. */
+.tb-legend--inline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tb-space-1) var(--tb-space-3);
+  color: var(--tb-fg-muted);
+}
+.tb-legend--inline .tb-legend-item {
+  display: inline-flex;
+  gap: var(--tb-space-1);
+  width: auto;
+  min-height: 0;
+  padding: 0;
+  color: inherit;
+}
+.tb-legend--inline .tb-legend-value { color: var(--tb-fg); }
+
+/* Share bar: a thin bar from 0 to 100 that shows a part of a whole. Set style="--value: 42". */
+.tb-bar {
+  --_tone: var(--tone, var(--tb-fg-subtle));
+  position: relative;
+  display: block;
+  width: 100%;
+  height: var(--tb-space-1);
+  overflow: hidden;
+  background: var(--tb-border);
+}
+.tb-bar::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: calc(var(--value, 0) * 1%);
+  max-width: 100%;
+  background: var(--_tone);
+  transition: width var(--tb-duration) var(--tb-ease);
+}
+.tb-bar--sm { height: calc(var(--tb-space-1) - var(--tb-border-width)); }
+
+@media (prefers-reduced-motion: reduce) {
+  :is(button, a).tb-stat,
+  .tb-bar::after { transition: none; }
+}
+
+/* ------------------------------------------------------------------------------------------
+   Timeline. What happened to one record, newest first: a marker, a title with its time, and
+   an optional line of detail and a value. A tone on the item colours the marker only.
+   ------------------------------------------------------------------------------------------ */
+
+.tb-timeline { position: relative; margin: 0; padding: 0; list-style: none; }
+.tb-timeline-item {
+  --_tone: var(--tb-fg-subtle);
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--tb-control-sm) minmax(0, 1fr);
+  column-gap: var(--tb-space-2);
+  padding-bottom: var(--tb-space-3);
+}
+/* The line between markers, stopping at the last one. */
+.tb-timeline-item:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  top: var(--tb-control-sm);
+  bottom: 0;
+  left: calc(var(--tb-control-sm) / 2);
+  border-left: var(--tb-border-width) solid var(--tb-border);
+}
+.tb-timeline-item--accent { --_tone: var(--tb-accent); }
+.tb-timeline-item--success { --_tone: var(--tb-success); }
+.tb-timeline-item--warning { --_tone: var(--tb-warning); }
+.tb-timeline-item--danger { --_tone: var(--tb-danger); }
+.tb-timeline-marker {
+  display: grid;
+  place-items: center;
+  width: var(--tb-control-sm);
+  height: var(--tb-control-sm);
+  color: var(--_tone);
+  background: var(--tb-bg-surface);
+  border: var(--tb-border-width) solid var(--tb-border);
+  border-radius: var(--tb-radius-full);
+}
+.tb-timeline-marker > .tb-icon { width: 14px; height: 14px; }
+.tb-timeline-body { min-width: 0; padding-top: 3px; }
+.tb-timeline-head { display: flex; align-items: baseline; gap: var(--tb-space-2); min-width: 0; }
+.tb-timeline-title { flex: 1; min-width: 0; font-weight: var(--tb-weight-medium); line-height: var(--tb-leading-tight); }
+.tb-timeline-value { flex: none; font-variant-numeric: tabular-nums; }
+.tb-timeline-text { margin: var(--tb-space-1) 0 0; font-size: var(--tb-text-sm); color: var(--tb-fg-muted); overflow-wrap: anywhere; }
+.tb-timeline-time { display: block; margin-top: 2px; font-size: var(--tb-text-xs); color: var(--tb-fg-subtle); font-variant-numeric: tabular-nums; }
+.tb-timeline--dense .tb-timeline-item { padding-bottom: var(--tb-space-2); }

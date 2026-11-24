@@ -1,0 +1,514 @@
+/* Tabula edit mode. The visual part of a page layout editor: a container whose sections can
+   be moved, resized, removed and added to, the way page builders in analyst tools work.
+   The behaviour (drag, keyboard, widths, persistence) is src/edit.js, mounted by the page with
+   mountEditMode. It sets these classes:
+     tb-edit-grid        on the container once its sections are laid out in rows and columns, in
+                         edit mode and after any saved edit.
+     tb-edit-row         a row, full width. Its columns share it, three at most. data-tb-keep on
+                         a row made by Add row: its columns stay when empty.
+     tb-edit-col         a column, --span wide out of twelve, stacking its sections.
+     tb-edit-hole        the Add widget slot in an empty column of a kept row, while editing.
+     tb-edit-resize      the line on a column's right edge that resizes it against the next one.
+     tb-edit             on the container while editing: hatched gutters, toolbars, the bar.
+     tb-edit-section     on each movable section. is-dragging, is-settling, is-removed, is-new.
+     tb-zone             the widget zone of a stage page, with tb-zone-slot while adding.
+   Every value reads from tokens.css. Private variables start with --_. */
+
+/* ------------------------------------------------------------------------------------------
+   Rows and columns. The page's own grid gives way to rows of columns while the layout is edited
+   or once it has been saved. A row fills the width and its columns share it by --span; a column
+   stacks its sections. The overrides are important because every page sets its own layout on
+   the same element.
+   ------------------------------------------------------------------------------------------ */
+
+.tb-edit-grid {
+  position: relative;
+  isolation: isolate;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: var(--tb-space-3) !important;
+}
+.tb-edit-row {
+  display: flex;
+  gap: var(--tb-space-3);
+  min-width: 0;
+}
+.tb-edit-col {
+  position: relative;
+  display: flex;
+  flex: var(--span, 12) 1 0%;
+  flex-direction: column;
+  gap: var(--tb-space-3);
+  min-width: 0;
+}
+.tb-edit-col > [data-tb-section] { flex: 1 1 auto; min-width: 0; }
+/* A column whose sections are all removed, and a row of such columns, take no room. A kept row
+   keeps its empty columns, so the widths hold with or without the editor, and shows while it is
+   edited even with nothing in it. */
+.tb-edit-row:not([data-tb-keep]) > .tb-edit-col:not(:has(> [data-tb-section]:not(.is-removed))),
+.tb-edit-row:not([data-tb-keep]):not(:has(> .tb-edit-col > [data-tb-section]:not(.is-removed))),
+.tb-edit-grid:not(.tb-edit) > .tb-edit-row[data-tb-keep]:not(:has(> .tb-edit-col > [data-tb-section]:not(.is-removed))) { display: none; }
+@media (max-width: 900px) {
+  .tb-edit-row { flex-direction: column; }
+  .tb-edit-col { flex: none; }
+  .tb-edit-grid:not(.tb-edit) .tb-edit-row[data-tb-keep] > .tb-edit-col:not(:has(> [data-tb-section]:not(.is-removed))) { display: none; }
+}
+/* On a fitted page (tb-page--fit) the layout keeps to the window. The page's own sections share
+   the height of their column, and rows holding one share the height of the page. Added widgets
+   keep their natural height. */
+@media (min-width: 1181px) {
+  .tb-page--fit > .tb-edit-grid > .tb-edit-row { flex: none; }
+  .tb-page--fit > .tb-edit-grid > .tb-edit-row:has(> .tb-edit-col > [data-tb-section]:not([data-tb-widget], .is-removed)) { flex: 1 1 0; min-height: 0; }
+  .tb-page--fit > .tb-edit-grid .tb-edit-col { min-height: 0; }
+  .tb-page--fit > .tb-edit-grid .tb-edit-col > [data-tb-section]:not([data-tb-widget]) { flex: 1 1 0; min-height: 0; }
+  .tb-page--fit > .tb-edit-grid .tb-edit-col > [data-tb-widget] { flex: none; }
+}
+
+.tb-edit-section.is-removed { display: none !important; }
+
+/* ------------------------------------------------------------------------------------------
+   Edit state: the gutters between sections carry a faint diagonal hatch, drawn under the sections
+   so it shows only where nothing sits.
+   ------------------------------------------------------------------------------------------ */
+
+.tb-edit-grid::before {
+  --_hatch: color-mix(in srgb, var(--tb-border-strong) 60%, transparent);
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: repeating-linear-gradient(-45deg, var(--_hatch) 0 var(--tb-border-width), transparent var(--tb-border-width) var(--tb-space-2));
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--tb-duration) var(--tb-ease);
+}
+.tb-edit::before { opacity: 1; }
+
+.tb-edit .tb-edit-section {
+  outline: var(--tb-border-width) dashed var(--tb-border-strong);
+  outline-offset: 2px;
+  transition: outline-color var(--tb-duration-fast) var(--tb-ease);
+}
+
+/* The settle after a move: the section slides from where it was to where it lands. It comes after
+   the rule above so it also wins while editing, which is when entering the editor moves things. */
+.tb-edit-section.is-settling,
+.tb-edit .tb-edit-section.is-settling {
+  transition: transform var(--tb-duration-slow) var(--tb-ease), outline-color var(--tb-duration-fast) var(--tb-ease);
+}
+
+/* Entering the editor, the bar fades in while the sections make room. */
+.tb-edit > .tb-edit-bar { animation: tb-edit-in var(--tb-duration-slow) var(--tb-ease); }
+@keyframes tb-edit-in { from { opacity: 0; transform: translateY(calc(var(--tb-space-1) * -1)); } }
+
+/* A section that groups several cards keeps the canvas between them, so it reads as one block. */
+.tb-edit .tb-edit-section:not(.tb-card, .tb-callout) {
+  background-color: var(--tb-bg-canvas);
+  border-radius: var(--tb-radius-md);
+}
+.tb-edit .tb-edit-section.is-anchor { position: relative; }
+/* is-active pins a section's toolbar open, for the section being worked on. */
+.tb-edit .tb-edit-section:is(:hover, :focus-within, .is-active) {
+  outline: 2px solid var(--tb-accent);
+}
+.tb-edit.is-dragging .tb-edit-section:not(.is-dragging) { outline-color: var(--tb-border-strong); outline-style: dashed; outline-width: var(--tb-border-width); }
+
+/* The section being dragged is lifted off the page and follows the pointer. */
+.tb-edit-section.is-dragging {
+  z-index: 10;
+  opacity: 0.94;
+  box-shadow: var(--tb-shadow-lg);
+  outline: 2px solid var(--tb-accent);
+  pointer-events: none;
+}
+.tb-edit.is-dragging,
+.tb-edit.is-dragging * { cursor: grabbing !important; user-select: none; }
+
+/* A widget just added pulses once, so the eye finds it. */
+.tb-edit-section.is-new { animation: tb-edit-new calc(var(--tb-duration) * 8) var(--tb-ease); }
+@keyframes tb-edit-new {
+  from { box-shadow: 0 0 0 var(--tb-space-2) var(--tb-accent-soft); }
+  to { box-shadow: 0 0 0 0 transparent; }
+}
+
+/* ------------------------------------------------------------------------------------------
+   Section toolbar: a floating strip in the top right corner of a section, shown on hover or
+   focus. Handle, move up and down, delete.
+   ------------------------------------------------------------------------------------------ */
+
+.tb-edit-toolbar {
+  position: absolute;
+  top: var(--tb-space-1);
+  right: var(--tb-space-1);
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  background: var(--tb-bg-raised);
+  border: var(--tb-border-width) solid var(--tb-border);
+  border-radius: var(--tb-radius-md);
+  box-shadow: var(--tb-shadow-md);
+  opacity: 0;
+  transform: translateY(calc(var(--tb-space-1) * -1));
+  pointer-events: none;
+  transition: opacity var(--tb-duration) var(--tb-ease), transform var(--tb-duration) var(--tb-ease);
+}
+.tb-edit-section:is(:hover, :focus-within, .is-dragging, .is-active) > .tb-edit-toolbar {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+.tb-edit.is-dragging .tb-edit-section:not(.is-dragging) > .tb-edit-toolbar { opacity: 0; pointer-events: none; }
+.tb-edit-toolbar > .tb-divider--vertical {
+  align-self: center;
+  height: var(--tb-space-4);
+  margin: 0 2px;
+}
+.tb-edit-toolbar .tb-button-group > .tb-button {
+  min-width: var(--tb-space-8);
+  font-variant-numeric: tabular-nums;
+}
+.tb-edit-delete:hover:not(:disabled) { color: var(--tb-danger); }
+
+/* The handle: grab it to drag, or focus it and use the arrow keys. */
+.tb-edit-handle {
+  cursor: grab;
+  touch-action: none;
+}
+.tb-edit-handle:active { cursor: grabbing; }
+
+/* ------------------------------------------------------------------------------------------
+   Drop marker: where the dragged section will land. A vertical bar between two sections of a row,
+   or a horizontal one above or below a full-width section.
+   ------------------------------------------------------------------------------------------ */
+
+.tb-edit-drop {
+  position: absolute;
+  z-index: 11;
+  width: 3px;
+  background: var(--tb-accent);
+  border-radius: var(--tb-radius-full);
+  box-shadow: 0 0 0 3px var(--tb-accent-soft);
+  pointer-events: none;
+  transition: left var(--tb-duration-fast) var(--tb-ease), top var(--tb-duration-fast) var(--tb-ease),
+    width var(--tb-duration-fast) var(--tb-ease), height var(--tb-duration-fast) var(--tb-ease);
+}
+.tb-edit-drop::before,
+.tb-edit-drop::after {
+  content: "";
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  box-sizing: border-box;
+  background: var(--tb-bg-surface);
+  border: 2px solid var(--tb-accent);
+  border-radius: var(--tb-radius-full);
+}
+.tb-edit-drop::before { top: -4px; left: -3px; }
+.tb-edit-drop::after { bottom: -4px; left: -3px; }
+.tb-edit-drop--horizontal { height: 3px; }
+.tb-edit-drop--horizontal::before { top: -3px; left: -4px; }
+.tb-edit-drop--horizontal::after { top: -3px; right: -4px; bottom: auto; left: auto; }
+.tb-edit-drop[hidden] { display: none; }
+
+/* ------------------------------------------------------------------------------------------
+   Empty column: a dashed slot the height of a small card, that opens the catalogue for its
+   column. It lights up when a section is dragged over it.
+   ------------------------------------------------------------------------------------------ */
+
+.tb-edit-hole {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--tb-space-2);
+  min-height: 160px;
+  padding: var(--tb-space-4);
+  font: inherit;
+  font-size: var(--tb-text-sm);
+  font-weight: var(--tb-weight-medium);
+  color: var(--tb-fg-muted);
+  cursor: pointer;
+  background: var(--tb-bg-canvas);
+  border: var(--tb-border-width) dashed var(--tb-border-strong);
+  border-radius: var(--tb-radius-lg);
+  transition: border-color var(--tb-duration-fast) var(--tb-ease), color var(--tb-duration-fast) var(--tb-ease), background-color var(--tb-duration-fast) var(--tb-ease);
+}
+.tb-edit-hole:is(:hover, :focus-visible, .is-over) { color: var(--tb-fg); border-color: var(--tb-accent); background: var(--tb-accent-soft); }
+.tb-edit-hole:focus-visible { outline: 2px solid var(--tb-border-focus); outline-offset: 2px; }
+
+/* ------------------------------------------------------------------------------------------
+   Resize line: the gutter on a column's right edge. It lights up on hover and focus and drags
+   the width between the column and the next one. The line snaps to a quarter, a third, a half,
+   two thirds or three quarters of the row, and no column goes under a quarter.
+   ------------------------------------------------------------------------------------------ */
+
+.tb-edit-resize {
+  position: absolute;
+  top: 0;
+  right: calc(var(--tb-space-3) / -2 - var(--tb-space-1));
+  bottom: 0;
+  z-index: 6;
+  width: var(--tb-space-2);
+  cursor: col-resize;
+  touch-action: none;
+}
+.tb-edit-resize::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(50% - 1px);
+  width: 2px;
+  border-radius: var(--tb-radius-full);
+  transition: background-color var(--tb-duration-fast) var(--tb-ease);
+}
+.tb-edit-resize:hover::after,
+.tb-edit-resize.is-active::after { background: var(--tb-accent); }
+.tb-edit-resize:focus-visible { outline: none; }
+.tb-edit-resize:focus-visible::after { background: var(--tb-border-focus); box-shadow: 0 0 0 2px var(--tb-accent-soft); }
+.tb-edit-resize[hidden] { display: none; }
+.tb-edit.is-resizing,
+.tb-edit.is-resizing * { cursor: col-resize !important; user-select: none; }
+
+/* The end of the sections while editing, an anchor for the script. Never shown. */
+.tb-edit-end { display: none; }
+
+/* ------------------------------------------------------------------------------------------
+   Bar: says the page is in edit mode, and holds Reset layout and Done. It sticks under the app
+   bar so Done is always in reach.
+   ------------------------------------------------------------------------------------------ */
+
+.tb-edit-bar {
+  position: sticky;
+  top: calc(var(--tb-space-12) + var(--tb-space-2));
+  z-index: 12;
+  box-sizing: border-box;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tb-space-2) var(--tb-space-3);
+  min-height: calc(var(--tb-control-lg) + var(--tb-space-2));
+  padding: var(--tb-space-1) var(--tb-space-2) var(--tb-space-1) var(--tb-space-3);
+  color: var(--tb-fg);
+  background: var(--tb-bg-raised);
+  border: var(--tb-border-width) solid var(--tb-border);
+  border-radius: var(--tb-radius-md);
+  box-shadow: var(--tb-shadow-md);
+}
+.tb-nav-left .tb-edit-bar { top: var(--tb-space-2); }
+.tb-edit-bar-title {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tb-space-2);
+  font-weight: var(--tb-weight-semibold);
+  white-space: nowrap;
+}
+.tb-edit-bar-title > .tb-icon { color: var(--tb-accent); }
+.tb-edit-bar-title > .tb-icon { color: var(--tb-accent); }
+.tb-edit-bar-hint {
+  min-width: 0;
+  font-size: var(--tb-text-sm);
+  color: var(--tb-fg-muted);
+}
+.tb-edit-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--tb-space-2);
+  margin-left: auto;
+}
+
+/* ------------------------------------------------------------------------------------------
+   Zone: the one place on a stage page that takes the analyst's own widgets, under the stage's
+   own cards (src/zone.js). Empty, it takes no room. While adding, it carries tb-edit and
+   is-editing, its widgets show the section toolbar, and tb-zone-slot is the Add widget slot or,
+   once the zone is full, the callout that says so.
+   ------------------------------------------------------------------------------------------ */
+
+.tb-zone {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-3);
+  min-width: 0;
+}
+.tb-zone:empty { display: none; }
+/* A stage's bar sits above its main, level with the main's padding. */
+.tb-page > .tb-edit-bar { margin: var(--tb-space-3) var(--tb-space-3) 0; }
+.tb-zone > [data-tb-widget] { position: relative; }
+/* Room left: the slot calls for attention in the action colour. A soft accent wash, a solid accent
+   edge, a filled plus like a primary button, and the brand's stacks faint in the corner, as on
+   every card header. It pulses once when adding starts (is-inviting). */
+.tb-zone-add {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--tb-space-2);
+  min-height: 120px;
+  padding: var(--tb-space-4);
+  font: inherit;
+  color: var(--tb-fg);
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--tb-accent-soft), transparent 75%), var(--tb-bg-surface);
+  border: var(--tb-border-width) solid var(--tb-accent);
+  border-radius: var(--tb-radius-lg);
+  transition: background-color var(--tb-duration-fast) var(--tb-ease), border-color var(--tb-duration-fast) var(--tb-ease);
+}
+.tb-zone-add::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  z-index: -1;
+  width: min(45%, 160px);
+  background-image: var(--tb-brand-pattern);
+  background-size: 80px 80px;
+  opacity: calc(var(--tb-brand-pattern-opacity) * 2);
+  -webkit-mask-image: linear-gradient(to left, transparent, #000 70%);
+  mask-image: linear-gradient(to left, transparent, #000 70%);
+  pointer-events: none;
+}
+.tb-zone-add-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--tb-space-8);
+  height: var(--tb-space-8);
+  color: var(--tb-fg-on-accent);
+  background: var(--tb-accent);
+  border-radius: var(--tb-radius-full);
+  transition: background-color var(--tb-duration-fast) var(--tb-ease), transform var(--tb-duration) var(--tb-ease);
+}
+.tb-zone-add-label { font-weight: var(--tb-weight-semibold); }
+.tb-zone-add:hover { background-color: var(--tb-accent-soft); border-color: var(--tb-accent-hover); }
+.tb-zone-add:hover .tb-zone-add-icon { background: var(--tb-accent-hover); transform: scale(1.08); }
+.tb-zone-add:focus-visible { outline: 2px solid var(--tb-border-focus); outline-offset: 2px; }
+.tb-zone-add.is-inviting { animation: tb-edit-new calc(var(--tb-duration) * 8) var(--tb-ease); }
+@media (prefers-reduced-motion: reduce) {
+  .tb-zone-add.is-inviting { animation: none; }
+  .tb-zone-add-icon { transition: none; }
+}
+/* Full: the slot's place turns into a blocked area, amber diagonal stripes behind a warning icon,
+   the count and the way out. Warning, never danger: nothing went wrong, a limit is reached. */
+.tb-zone-full {
+  --_stripe: color-mix(in srgb, var(--tb-warning) 16%, transparent);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--tb-space-2);
+  min-height: 120px;
+  padding: var(--tb-space-4);
+  text-align: center;
+  color: var(--tb-fg);
+  background-color: var(--tb-bg-surface);
+  background-image: repeating-linear-gradient(-45deg, var(--_stripe) 0 var(--tb-space-2), transparent var(--tb-space-2) var(--tb-space-4));
+  border: var(--tb-border-width) dashed var(--tb-warning);
+  border-radius: var(--tb-radius-lg);
+}
+.tb-zone-full > .tb-icon { width: var(--tb-space-5); height: var(--tb-space-5); color: var(--tb-warning); }
+.tb-zone-full-title { font-weight: var(--tb-weight-semibold); }
+.tb-zone-full-text { max-width: 32ch; font-size: var(--tb-text-sm); color: var(--tb-fg-muted); }
+
+.tb-zone-count {
+  font-size: var(--tb-text-xs);
+  font-weight: var(--tb-weight-regular);
+  color: var(--tb-fg-muted); /* subtle measured 3.7:1 over the accent wash */
+}
+
+/* ------------------------------------------------------------------------------------------
+   Widget catalogue: the choices behind Add widget, in a dialog. Each option shows a small drawing
+   of the widget, its name and what it holds.
+   ------------------------------------------------------------------------------------------ */
+
+.tb-widget-catalog {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--tb-space-2);
+}
+/* The dialog that holds the catalogue is wider than tb-dialog--lg, so four options fit a row. */
+.tb-dialog:has(> .tb-dialog-body > .tb-widget-catalog) { --_dialog-width: 920px; }
+@media (max-width: 960px) {
+  .tb-widget-catalog { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+.tb-widget-catalog-title {
+  grid-column: 1 / -1;
+  margin: var(--tb-space-3) 0 0;
+  font-size: var(--tb-text-sm);
+  font-weight: var(--tb-weight-medium);
+  color: var(--tb-fg-muted);
+}
+.tb-widget-catalog-title:first-child { margin-top: 0; }
+@media (max-width: 640px) {
+  .tb-widget-catalog { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+.tb-widget-option {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--tb-space-2);
+  min-width: 0;
+  margin: 0;
+  padding: var(--tb-space-2);
+  font: inherit;
+  color: var(--tb-fg);
+  text-align: left;
+  background: var(--tb-bg-surface);
+  border: var(--tb-border-width) solid var(--tb-border);
+  border-radius: var(--tb-radius-md);
+  cursor: pointer;
+  transition: border-color var(--tb-duration-fast) var(--tb-ease), background-color var(--tb-duration-fast) var(--tb-ease);
+}
+.tb-widget-option:hover {
+  border-color: var(--tb-accent);
+  background: linear-gradient(var(--tb-bg-hover), var(--tb-bg-hover)), var(--tb-bg-surface);
+}
+.tb-widget-option:focus-visible {
+  outline: 2px solid var(--tb-border-focus);
+  outline-offset: 1px;
+}
+.tb-widget-option-preview {
+  display: grid;
+  place-items: center;
+  height: 64px;
+  color: var(--tb-accent);
+  background: var(--tb-bg-sunken);
+  border-radius: var(--tb-radius-sm);
+}
+.tb-widget-option-preview > svg { display: block; width: 112px; height: 48px; overflow: visible; }
+.tb-widget-option-name {
+  font-weight: var(--tb-weight-semibold);
+  line-height: var(--tb-leading-tight);
+}
+.tb-widget-option-desc {
+  font-size: var(--tb-text-sm);
+  line-height: var(--tb-leading-tight);
+  color: var(--tb-fg-muted);
+}
+.tb-widget-option-text { display: flex; flex-direction: column; gap: 2px; padding: 0 2px 2px; }
+
+/* A widget body that is a note: the text is editable in place. */
+.tb-widget-note[contenteditable] {
+  border-radius: var(--tb-radius-sm);
+  outline: none;
+}
+.tb-widget-note[contenteditable]:focus-visible { box-shadow: 0 0 0 2px var(--tb-border-focus); }
+
+@media (prefers-reduced-motion: reduce) {
+  .tb-edit-grid::before,
+  .tb-edit .tb-edit-section,
+  .tb-edit-section.is-settling,
+  .tb-edit-toolbar,
+  .tb-edit-drop,
+  .tb-edit-resize::after,
+  .tb-edit-hole,
+  .tb-widget-option { transition: none; }
+  .tb-edit-section.is-new,
+  .tb-edit > .tb-edit-bar { animation: none; }
+  .tb-edit-toolbar { transform: none; }
+}
